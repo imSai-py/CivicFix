@@ -1,0 +1,1 @@
+"""Civic Issue domain module."""

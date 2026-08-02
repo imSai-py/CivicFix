@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Service 1: Nginx Reverse Proxy & Static React SPA Web Server (Port 80/443)
+  # ============================================================================
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: civicfix_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - media_storage:/app/uploads
+      - ./nginx/ssl:/etc/letsencrypt/live/civicfix.gov:ro
+    depends_on:
+      - api
+    networks:
+      - civicfix_net
+
+  # ============================================================================
+  # Service 2: FastAPI Application Web Server
+  # ============================================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: civicfix_api
+    restart: unless-stopped
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-production}
+      - POSTGRES_SERVER=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-civicfix_db}
+      - POSTGRES_USER=${POSTGRES_USER:-civicfix_user}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-civicfix_secure_password_123}
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-default_secret_key_change_in_production}
+    volumes:
+      - media_storage:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - civicfix_net
+
+  # ============================================================================
+  # Service 3: PostgreSQL Relational Database Engine
+  # ============================================================================
+  db:
+    image: postgres:16-alpine
+    container_name: civicfix_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-civicfix_db}
+      POSTGRES_USER: ${POSTGRES_USER:-civicfix_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-civicfix_secure_password_123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-civicfix_user} -d ${POSTGRES_DB:-civicfix_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - civicfix_net
+
+  # ============================================================================
+  # Service 4: Redis In-Memory Cache & Message Broker
+  # ============================================================================
+  redis:
+    image: redis:7-alpine
+    container_name: civicfix_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - civicfix_net
+
+# ==============================================================================
+# Persistent Named Volumes
+# ==============================================================================
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  media_storage:
+    driver: local
+
+# ==============================================================================
+# Custom Isolated Virtual Network
+# ==============================================================================
+networks:
+  civicfix_net:
+    driver: bridge
