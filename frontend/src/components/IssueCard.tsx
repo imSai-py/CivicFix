@@ -235,7 +235,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({
                   className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Save Image</span>
+                  <span className="hidden sm:inline">Preview Image</span>
                 </a>
                 <button
                   type="button"
