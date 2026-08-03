@@ -47,7 +47,7 @@ class Settings(BaseSettings):
 
     # Storage Settings
     STORAGE_BACKEND: Literal["local", "s3"] = "local"
-    MEDIA_UPLOAD_DIR: str = "/app/uploads"
+    MEDIA_UPLOAD_DIR: str = "uploads"
 
     @property
     def async_database_url(self) -> str:

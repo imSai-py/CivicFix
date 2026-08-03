@@ -4,6 +4,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.application.common.uow import AbstractUnitOfWork
+from src.core.config import get_settings
 from src.core.database import get_db_session
 from src.domain.common.exceptions import InvalidTokenError, UnauthorizedAccessError
 from src.domain.users.user_entity import UserRole
@@ -13,6 +14,7 @@ from src.infrastructure.security.password_hasher import BcryptPasswordHasher, Pa
 from src.infrastructure.storage.interface import StorageAdapterInterface
 from src.infrastructure.storage.local_storage import LocalStorageAdapter
 
+settings = get_settings()
 security_scheme = HTTPBearer()
 
 
@@ -25,7 +27,7 @@ def get_jwt_handler() -> JWTHandlerInterface:
 
 
 def get_storage_adapter() -> StorageAdapterInterface:
-    return LocalStorageAdapter()
+    return LocalStorageAdapter(base_upload_dir=settings.MEDIA_UPLOAD_DIR)
 
 
 def get_uow(session: AsyncSession = Depends(get_db_session)) -> AbstractUnitOfWork:
