@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Filter, Search, ShieldCheck, Activity } from 'lucide-react';
+import { Filter, Search, ShieldCheck, Activity, Tag, ListFilter } from 'lucide-react';
 import { IssueCard } from '../components/IssueCard';
 import { issuesApi, categoriesApi } from '../services/api';
 import { Category, Issue } from '../types';
+import { CustomDropdown, DropdownOption } from '../components/CustomDropdown';
 
 interface FeedPageProps {
   isAuthenticated: boolean;
@@ -48,6 +49,25 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated }) => {
       i.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // Dropdown options
+  const statusOptions: DropdownOption[] = [
+    { value: '', label: 'All Statuses', icon: <ListFilter className="w-3.5 h-3.5 text-slate-400" /> },
+    { value: 'SUBMITTED', label: 'Submitted', badgeColor: 'bg-indigo-500' },
+    { value: 'ACKNOWLEDGED', label: 'Acknowledged', badgeColor: 'bg-blue-500' },
+    { value: 'IN_PROGRESS', label: 'In Progress', badgeColor: 'bg-amber-500' },
+    { value: 'RESOLVED', label: 'Resolved', badgeColor: 'bg-emerald-500' },
+    { value: 'REJECTED', label: 'Rejected', badgeColor: 'bg-rose-500' },
+  ];
+
+  const categoryOptions: DropdownOption[] = [
+    { value: '', label: 'All Categories', icon: <Tag className="w-3.5 h-3.5 text-slate-400" /> },
+    ...categories.map((c) => ({
+      value: c.id,
+      label: c.name,
+      icon: <Tag className="w-3.5 h-3.5 text-indigo-400" />,
+    })),
+  ];
+
   return (
     <div className="space-y-8">
       {/* Hero Section */}
@@ -82,41 +102,29 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated }) => {
             placeholder="Search reported issues..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"
+            className="w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"
           />
         </div>
 
         <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-          <div className="flex items-center space-x-1.5 text-xs text-slate-400">
+          <div className="flex items-center space-x-1.5 text-xs text-slate-400 font-semibold">
             <Filter className="w-3.5 h-3.5" />
             <span>Filters:</span>
           </div>
 
-          <select
+          <CustomDropdown
+            options={statusOptions}
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
-          >
-            <option value="">All Statuses</option>
-            <option value="SUBMITTED">Submitted</option>
-            <option value="ACKNOWLEDGED">Acknowledged</option>
-            <option value="IN_PROGRESS">In Progress</option>
-            <option value="RESOLVED">Resolved</option>
-            <option value="REJECTED">Rejected</option>
-          </select>
+            onChange={(val) => setSelectedStatus(val)}
+            className="w-44"
+          />
 
-          <select
+          <CustomDropdown
+            options={categoryOptions}
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="bg-slate-900 border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
-          >
-            <option value="">All Categories</option>
-            {categories.map((c) => (
-              <option key={c.id} value={c.id}>
-                {c.name}
-              </option>
-            ))}
-          </select>
+            onChange={(val) => setSelectedCategory(val)}
+            className="w-48"
+          />
         </div>
       </div>
 

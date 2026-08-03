@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Camera, Upload, MapPin, Send, AlertCircle, CheckCircle, Trash2, Shield, X } from 'lucide-react';
+import { Camera, Upload, MapPin, Send, AlertCircle, CheckCircle, Trash2, Shield, X, Flame, AlertTriangle, Info, Tag } from 'lucide-react';
 import { categoriesApi, issuesApi } from '../services/api';
 import { Category, IssuePriority } from '../types';
+import { CustomDropdown, DropdownOption } from '../components/CustomDropdown';
 
 interface ReportPageProps {
   onSuccessNavigate: () => void;
@@ -183,6 +184,41 @@ export const ReportPage: React.FC<ReportPageProps> = ({
     }
   };
 
+  // Dropdown Options Configuration
+  const categoryOptions: DropdownOption[] = categories.map((c) => ({
+    value: c.id,
+    label: c.name,
+    description: c.description || undefined,
+    icon: <Tag className="w-3.5 h-3.5 text-indigo-400" />,
+  }));
+
+  const priorityOptions: DropdownOption[] = [
+    {
+      value: 'LOW',
+      label: 'Low Urgency',
+      badgeColor: 'bg-slate-400',
+      icon: <Info className="w-3.5 h-3.5 text-slate-400" />,
+    },
+    {
+      value: 'MEDIUM',
+      label: 'Medium Urgency',
+      badgeColor: 'bg-amber-400',
+      icon: <AlertCircle className="w-3.5 h-3.5 text-amber-400" />,
+    },
+    {
+      value: 'HIGH',
+      label: 'High Urgency',
+      badgeColor: 'bg-orange-500',
+      icon: <AlertTriangle className="w-3.5 h-3.5 text-orange-400" />,
+    },
+    {
+      value: 'CRITICAL',
+      label: 'Critical Emergency',
+      badgeColor: 'bg-rose-500',
+      icon: <Flame className="w-3.5 h-3.5 text-rose-500" />,
+    },
+  ];
+
   if (!isAuthenticated) {
     return (
       <div className="max-w-md mx-auto my-12 glass-panel p-8 rounded-3xl text-center shadow-2xl border border-indigo-500/20">
@@ -235,7 +271,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
       <form onSubmit={handleSubmit} className="glass-panel p-6 sm:p-8 rounded-3xl border border-slate-800 space-y-6">
         {/* Title */}
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Issue Title *</label>
+          <label className="block text-xs font-semibold text-slate-300 mb-1.5">Issue Title *</label>
           <input
             type="text"
             required
@@ -244,50 +280,32 @@ export const ReportPage: React.FC<ReportPageProps> = ({
             placeholder="e.g. Dangerous Pothole on Main Street"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"
           />
         </div>
 
-        {/* Category & Urgency Grid */}
+        {/* Category & Urgency Modern Dropdowns */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">Category *</label>
-            <select
-              value={categoryId}
-              onChange={(e) => setCategoryId(e.target.value)}
-              required
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-            >
-              {categories.length === 0 ? (
-                <option value="">Loading categories...</option>
-              ) : (
-                categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))
-              )}
-            </select>
-          </div>
+          <CustomDropdown
+            label="Category *"
+            options={categoryOptions}
+            value={categoryId}
+            onChange={(val) => setCategoryId(val)}
+            placeholder="Select category"
+          />
 
-          <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1.5">Urgency Priority</label>
-            <select
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as IssuePriority)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-            >
-              <option value="LOW">Low</option>
-              <option value="MEDIUM">Medium</option>
-              <option value="HIGH">High</option>
-              <option value="CRITICAL">Critical</option>
-            </select>
-          </div>
+          <CustomDropdown
+            label="Urgency Priority"
+            options={priorityOptions}
+            value={priority}
+            onChange={(val) => setPriority(val as IssuePriority)}
+            placeholder="Select urgency"
+          />
         </div>
 
         {/* Description */}
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1.5">Problem Description *</label>
+          <label className="block text-xs font-semibold text-slate-300 mb-1.5">Problem Description *</label>
           <textarea
             required
             rows={4}
@@ -296,14 +314,14 @@ export const ReportPage: React.FC<ReportPageProps> = ({
             placeholder="Provide specific details about the issue location, size, or public hazard..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"
           />
         </div>
 
         {/* Location Section */}
         <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 text-xs font-medium text-indigo-400">
+            <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-400">
               <MapPin className="w-4 h-4" />
               <span>Location Details</span>
             </div>
@@ -317,7 +335,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                   });
                 }
               }}
-              className="text-[11px] text-indigo-400 hover:underline font-medium"
+              className="text-[11px] text-indigo-400 hover:underline font-semibold"
             >
               Auto-detect My Location
             </button>
@@ -332,7 +350,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                 required
                 value={latitude}
                 onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                className="w-full bg-slate-955 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
               />
             </div>
             <div>
@@ -343,7 +361,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                 required
                 value={longitude}
                 onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                className="w-full bg-slate-955 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
               />
             </div>
           </div>
@@ -355,14 +373,14 @@ export const ReportPage: React.FC<ReportPageProps> = ({
               placeholder="742 Evergreen Terrace, Ward 5"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full bg-slate-955 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600"
+              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600"
             />
           </div>
         </div>
 
         {/* Camera & Photo Attachment Section */}
         <div className="p-4 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-4">
-          <label className="block text-xs font-medium text-slate-300">Photo Evidence (Camera or File)</label>
+          <label className="block text-xs font-semibold text-slate-300">Photo Evidence (Camera or File)</label>
 
           {/* Action Buttons: Open Camera vs Upload File */}
           <div className="flex flex-wrap items-center gap-3">
@@ -436,7 +454,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-xl shadow-indigo-600/30 flex items-center justify-center space-x-2 disabled:opacity-50"
+            className="w-full py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-xl shadow-indigo-600/30 flex items-center justify-center space-x-2 disabled:opacity-50"
           >
             <Send className="w-4 h-4" />
             <span>{isSubmitting ? 'Submitting Report...' : 'Submit Civic Report'}</span>
