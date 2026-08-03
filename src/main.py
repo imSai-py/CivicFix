@@ -3,11 +3,12 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.config import get_settings
-from src.core.database import engine
+from src.core.database import AsyncSessionFactory, engine
 from src.domain.common.exceptions import DomainException
 from src.infrastructure.persistence.base_model import BaseModel
 import src.infrastructure.persistence.models.user_model
 import src.infrastructure.persistence.models.issue_model
+from src.infrastructure.persistence.seeder import seed_initial_data
 from src.presentation.api.v1.router import api_v1_router
 from src.presentation.middlewares.error_handler import (
     domain_exception_handler,
@@ -22,13 +23,16 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """
     Application lifespan manager handling startup and shutdown procedures.
-    Automatically creates database tables on startup if they don't exist.
+    Automatically creates database tables and seeds default categories and departments on startup.
     """
     try:
         async with engine.begin() as conn:
             await conn.run_sync(BaseModel.metadata.create_all)
+
+        async with AsyncSessionFactory() as session:
+            await seed_initial_data(session)
     except Exception as exc:
-        print(f"[CivicFix Startup Note] Database table init: {exc}")
+        print(f"[CivicFix Startup Note] Database init: {exc}")
     yield
     await engine.dispose()
 

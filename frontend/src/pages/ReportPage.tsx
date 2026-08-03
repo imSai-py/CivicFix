@@ -37,13 +37,19 @@ export const ReportPage: React.FC<ReportPageProps> = ({
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
   useEffect(() => {
-    // Load categories
-    categoriesApi.list().then((res) => {
-      setCategories(res.data);
-      if (res.data.length > 0) {
-        setCategoryId(res.data[0].id);
-      }
-    }).catch(console.error);
+    // Load active issue categories from backend
+    categoriesApi
+      .list()
+      .then((res) => {
+        const catList = res.data || [];
+        setCategories(catList);
+        if (catList.length > 0) {
+          setCategoryId(catList[0].id);
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load categories:', err);
+      });
 
     // Detect user geolocation
     if (navigator.geolocation) {
@@ -130,6 +136,11 @@ export const ReportPage: React.FC<ReportPageProps> = ({
 
     if (!isAuthenticated) {
       onSwitchToLogin();
+      return;
+    }
+
+    if (!categoryId) {
+      setErrorMessage('Please select a valid issue category.');
       return;
     }
 
@@ -244,13 +255,18 @@ export const ReportPage: React.FC<ReportPageProps> = ({
             <select
               value={categoryId}
               onChange={(e) => setCategoryId(e.target.value)}
+              required
               className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
             >
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
+              {categories.length === 0 ? (
+                <option value="">Loading categories...</option>
+              ) : (
+                categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))
+              )}
             </select>
           </div>
 
@@ -316,7 +332,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                 required
                 value={latitude}
                 onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                className="w-full bg-slate-955 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
               />
             </div>
             <div>
@@ -327,7 +343,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                 required
                 value={longitude}
                 onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
+                className="w-full bg-slate-955 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white"
               />
             </div>
           </div>
@@ -339,7 +355,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
               placeholder="742 Evergreen Terrace, Ward 5"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600"
+              className="w-full bg-slate-955 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-600"
             />
           </div>
         </div>
