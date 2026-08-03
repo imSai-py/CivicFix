@@ -21,6 +21,9 @@ class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     DEBUG: bool = False
 
+    # Database Selection (Use SQLite for zero-setup local dev, PostgreSQL for prod)
+    USE_SQLITE_DEV: bool = True
+
     # PostgreSQL Database Settings
     POSTGRES_SERVER: str = "localhost"
     POSTGRES_PORT: int = 5432
@@ -49,10 +52,14 @@ class Settings(BaseSettings):
     @property
     def async_database_url(self) -> str:
         """
-        Constructs the PostgreSQL async connection URI for asyncpg driver.
+        Constructs the database connection URI.
+        Uses SQLite (sqlite+aiosqlite) for local development when USE_SQLITE_DEV is True.
+        Uses PostgreSQL (postgresql+asyncpg) for production.
         """
         if self.ENVIRONMENT == "testing":
             return "sqlite+aiosqlite:///:memory:"
+        if self.USE_SQLITE_DEV and self.ENVIRONMENT == "development":
+            return "sqlite+aiosqlite:///./civicfix_dev.db"
         return (
             f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
             f"@{self.POSTGRES_SERVER}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"

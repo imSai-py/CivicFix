@@ -14,7 +14,6 @@ from sqlalchemy import (
     Text,
     UniqueConstraint
 )
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from src.domain.issues.issue_entity import (
     Attachment,
@@ -27,14 +26,14 @@ from src.domain.issues.issue_entity import (
     IssuePriority,
     IssueStatus
 )
-from src.infrastructure.persistence.base_model import BaseModel
+from src.infrastructure.persistence.base_model import BaseModel, GUID
 
 upvotes_table = Table(
     "issue_upvotes",
     BaseModel.metadata,
-    Column("id", UUID(as_uuid=True), primary_key=True, default=uuid.uuid4),
-    Column("issue_id", UUID(as_uuid=True), ForeignKey("issues.id", ondelete="CASCADE"), nullable=False, index=True),
-    Column("user_id", UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True),
+    Column("id", GUID, primary_key=True, default=uuid.uuid4),
+    Column("issue_id", GUID, ForeignKey("issues.id", ondelete="CASCADE"), nullable=False, index=True),
+    Column("user_id", GUID, ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True),
     Column("created_at", DateTime(timezone=True), nullable=False),
     UniqueConstraint("issue_id", "user_id", name="uq_issue_user_upvote")
 )
@@ -80,6 +79,7 @@ class CategoryModel(BaseModel):
     name: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
     default_department_id: Mapped[uuid.UUID] = mapped_column(
+        GUID,
         ForeignKey("departments.id", ondelete="RESTRICT"),
         nullable=False
     )
@@ -117,6 +117,7 @@ class AttachmentModel(BaseModel):
     __tablename__ = "issue_attachments"
 
     issue_id: Mapped[uuid.UUID] = mapped_column(
+        GUID,
         ForeignKey("issues.id", ondelete="CASCADE"),
         nullable=False,
         index=True
@@ -126,6 +127,7 @@ class AttachmentModel(BaseModel):
     mime_type: Mapped[str] = mapped_column(String(100), nullable=False)
     file_size_bytes: Mapped[int] = mapped_column(Integer, nullable=False)
     uploaded_by_id: Mapped[uuid.UUID] = mapped_column(
+        GUID,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False
     )
@@ -163,11 +165,13 @@ class AuditLogModel(BaseModel):
     __tablename__ = "issue_audit_logs"
 
     issue_id: Mapped[uuid.UUID] = mapped_column(
+        GUID,
         ForeignKey("issues.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     actor_id: Mapped[uuid.UUID] = mapped_column(
+        GUID,
         ForeignKey("users.id", ondelete="RESTRICT"),
         nullable=False
     )
@@ -226,16 +230,19 @@ class IssueModel(BaseModel):
         index=True
     )
     reporter_id: Mapped[uuid.UUID] = mapped_column(
+        GUID,
         ForeignKey("users.id", ondelete="CASCADE"),
         nullable=False,
         index=True
     )
     assigned_department_id: Mapped[uuid.UUID] = mapped_column(
+        GUID,
         ForeignKey("departments.id", ondelete="RESTRICT"),
         nullable=False,
         index=True
     )
     category_id: Mapped[uuid.UUID] = mapped_column(
+        GUID,
         ForeignKey("categories.id", ondelete="RESTRICT"),
         nullable=False,
         index=True

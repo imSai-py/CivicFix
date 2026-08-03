@@ -10,6 +10,12 @@ ENV/
 env.bak/
 venv.bak/
 
+# Development Database Files
+*.db
+*.sqlite
+*.sqlite3
+civicfix_dev.db
+
 # Frontend
 frontend/node_modules/
 frontend/dist/
@@ -26,7 +32,6 @@ frontend/.vite/
 *.swo
 
 # Database & Uploads
-*.sqlite3
 uploads/
 /app/uploads/
 

@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import math
 from typing import List, Optional, Tuple
 import uuid
 from sqlalchemy import func, select
@@ -18,6 +19,7 @@ from src.infrastructure.persistence.models.issue_model import (
 class IssueRepositoryImpl(IssueRepositoryInterface):
     """
     SQLAlchemy 2.0 Async repository implementation for Issue domain entity.
+    Supports both SQLite (development) and PostgreSQL (production).
     """
     def __init__(self, session: AsyncSession):
         self.session = session
@@ -51,10 +53,10 @@ class IssueRepositoryImpl(IssueRepositoryInterface):
         if reporter_id:
             stmt = stmt.where(IssueModel.reporter_id == reporter_id)
 
-        # Proximity bounding box filter calculation if coordinates are specified
+        # Proximity bounding box filter calculation (Database-agnostic using Python math)
         if latitude is not None and longitude is not None and radius_km:
             lat_delta = radius_km / 111.0
-            lng_delta = radius_km / (111.0 * func.cos(func.radians(latitude)))
+            lng_delta = radius_km / (111.0 * math.cos(math.radians(latitude)))
             stmt = stmt.where(
                 IssueModel.latitude.between(latitude - lat_delta, latitude + lat_delta),
                 IssueModel.longitude.between(longitude - lng_delta, longitude + lng_delta)
