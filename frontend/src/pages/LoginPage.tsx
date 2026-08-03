@@ -26,12 +26,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
       await login(res.data);
       onSuccess();
     } catch (err: any) {
-      const serverMsg =
-        err.response?.data?.error?.message ||
-        err.response?.data?.detail?.[0]?.msg ||
-        err.response?.data?.detail ||
-        'Invalid email or password.';
-      setErrorMessage(serverMsg);
+      if (!err.response) {
+        setErrorMessage('Cannot connect to backend server. Please start the FastAPI backend server using: python -m uvicorn src.main:app --reload --port 8000');
+      } else {
+        const serverMsg =
+          err.response?.data?.error?.message ||
+          (typeof err.response?.data?.detail === 'string' ? err.response?.data?.detail : null) ||
+          err.response?.data?.detail?.[0]?.msg ||
+          'Invalid email or password.';
+        setErrorMessage(serverMsg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -48,9 +52,9 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
       </div>
 
       {errorMessage && (
-        <div className="mb-6 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center space-x-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{errorMessage}</span>
+        <div className="mb-6 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start space-x-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
+          <span className="leading-relaxed">{errorMessage}</span>
         </div>
       )}
 

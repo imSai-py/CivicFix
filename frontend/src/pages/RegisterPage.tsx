@@ -49,12 +49,16 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) =
         onSwitchToLogin();
       }, 1500);
     } catch (err: any) {
-      const serverMsg =
-        err.response?.data?.error?.message ||
-        err.response?.data?.detail?.[0]?.msg ||
-        err.response?.data?.detail ||
-        'Registration failed. Please check your inputs and try again.';
-      setErrorMessage(serverMsg);
+      if (!err.response) {
+        setErrorMessage('Cannot connect to backend server. Please start the FastAPI backend server using: python -m uvicorn src.main:app --reload --port 8000');
+      } else {
+        const serverMsg =
+          err.response?.data?.error?.message ||
+          (typeof err.response?.data?.detail === 'string' ? err.response?.data?.detail : null) ||
+          err.response?.data?.detail?.[0]?.msg ||
+          'Registration failed. Please check your inputs and try again.';
+        setErrorMessage(serverMsg);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -71,9 +75,9 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) =
       </div>
 
       {errorMessage && (
-        <div className="mb-6 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center space-x-2">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          <span>{errorMessage}</span>
+        <div className="mb-6 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-start space-x-2.5">
+          <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
+          <span className="leading-relaxed">{errorMessage}</span>
         </div>
       )}
 
