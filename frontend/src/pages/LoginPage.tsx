@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Lock, Mail, Shield, AlertCircle } from 'lucide-react';
+import { Lock, Mail, Shield, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { authApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -12,6 +12,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -21,11 +22,16 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
     setErrorMessage('');
 
     try {
-      const res = await authApi.login({ email, password });
+      const res = await authApi.login({ email: email.trim(), password });
       await login(res.data);
       onSuccess();
     } catch (err: any) {
-      setErrorMessage(err.response?.data?.error?.message || 'Invalid email or password.');
+      const serverMsg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.detail?.[0]?.msg ||
+        err.response?.data?.detail ||
+        'Invalid email or password.';
+      setErrorMessage(serverMsg);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +62,7 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
             <input
               type="email"
               required
-              placeholder="citizen@civicfix.org"
+              placeholder="citizen@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
@@ -69,13 +75,21 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
           <div className="relative">
             <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-200 transition-colors"
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
         </div>
 

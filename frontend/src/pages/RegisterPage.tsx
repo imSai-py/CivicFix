@@ -1,16 +1,19 @@
 import React, { useState } from 'react';
-import { Lock, Mail, User as UserIcon, Phone, Shield, AlertCircle } from 'lucide-react';
+import { Lock, Mail, User as UserIcon, Phone, Shield, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { authApi } from '../services/api';
 
 interface RegisterPageProps {
   onSwitchToLogin: () => void;
 }
 
+const STRICT_EMAIL_REGEX = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+
 export const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
@@ -21,19 +24,32 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) =
     setErrorMessage('');
     setSuccessMessage('');
 
+    // Strict Email Verification check
+    const cleanEmail = email.trim();
+    if (!STRICT_EMAIL_REGEX.test(cleanEmail)) {
+      setErrorMessage('Please enter a valid email address (e.g., citizen@example.com). Gibberish emails are not allowed.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       await authApi.register({
-        full_name: fullName,
-        email,
+        full_name: fullName.trim(),
+        email: cleanEmail,
         password,
-        phone_number: phone || undefined,
+        phone_number: phone ? (phone.startsWith('+') ? phone : `+91 ${phone}`) : undefined,
       });
-      setSuccessMessage('Registration successful! Please sign in with your credentials.');
+      setSuccessMessage('Registration successful! Redirecting to sign in...');
       setTimeout(() => {
         onSwitchToLogin();
       }, 1500);
     } catch (err: any) {
-      setErrorMessage(err.response?.data?.error?.message || 'Registration failed.');
+      const serverMsg =
+        err.response?.data?.error?.message ||
+        err.response?.data?.detail?.[0]?.msg ||
+        err.response?.data?.detail ||
+        'Registration failed. Please check your inputs and try again.';
+      setErrorMessage(serverMsg);
     } finally {
       setIsLoading(false);
     }
@@ -64,12 +80,14 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) =
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
+          <label className="block text-xs font-medium text-slate-300 mb-1">Full Name *</label>
           <div className="relative">
             <UserIcon className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
             <input
               type="text"
               required
+              minLength={2}
+              maxLength={150}
               placeholder="Jane Doe"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -79,43 +97,53 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) =
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">Email Address</label>
+          <label className="block text-xs font-medium text-slate-300 mb-1">Email Address *</label>
           <div className="relative">
             <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
             <input
               type="email"
               required
-              placeholder="jane@example.com"
+              placeholder="citizen@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
             />
           </div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Must be a valid email format (e.g. user@domain.com)</span>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">Password</label>
+          <label className="block text-xs font-medium text-slate-300 mb-1">Password *</label>
           <div className="relative">
             <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
               minLength={8}
               placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-200 transition-colors"
+              title={showPassword ? "Hide password" : "Show password"}
+            >
+              {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
           </div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Minimum 8 characters</span>
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number (Optional)</label>
+          <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number (+91 India)</label>
           <div className="relative">
             <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
             <input
               type="tel"
-              placeholder="+1 202 555 0143"
+              placeholder="+91 98765 43210"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
               className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"

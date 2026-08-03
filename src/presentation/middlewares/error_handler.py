@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from fastapi import Request, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from src.domain.common.exceptions import (
     DomainException,
@@ -42,6 +43,30 @@ async def domain_exception_handler(request: Request, exc: DomainException) -> JS
             "error": {
                 "code": error_code,
                 "message": exc.message,
+                "timestamp": timestamp,
+                "path": str(request.url.path)
+            }
+        }
+    )
+
+
+async def validation_exception_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    """
+    Handler for Pydantic RequestValidationError (422) formatting error messages nicely.
+    """
+    timestamp = datetime.now(timezone.utc).isoformat()
+    errors = exc.errors()
+    first_msg = errors[0].get("msg", "Invalid input data provided.") if errors else "Invalid request format."
+    field = errors[0].get("loc", [])[-1] if errors and errors[0].get("loc") else ""
+
+    message = f"Validation error on field '{field}': {first_msg}" if field else first_msg
+
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={
+            "error": {
+                "code": "VALIDATION_ERROR",
+                "message": message,
                 "timestamp": timestamp,
                 "path": str(request.url.path)
             }

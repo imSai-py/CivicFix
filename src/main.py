@@ -1,11 +1,15 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from src.core.config import get_settings
 from src.core.database import engine
 from src.domain.common.exceptions import DomainException
 from src.presentation.api.v1.router import api_v1_router
-from src.presentation.middlewares.error_handler import domain_exception_handler
+from src.presentation.middlewares.error_handler import (
+    domain_exception_handler,
+    validation_exception_handler
+)
 
 settings = get_settings()
 
@@ -44,6 +48,7 @@ def create_application() -> FastAPI:
 
     # Register Exception Handlers
     app.add_exception_handler(DomainException, domain_exception_handler)
+    app.add_exception_handler(RequestValidationError, validation_exception_handler)
 
     # Include API Routers
     app.include_router(api_v1_router, prefix=settings.API_V1_STR)
