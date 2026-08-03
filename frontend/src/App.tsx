@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
+import { BottomNav } from './components/BottomNav';
 import { Footer } from './components/Footer';
 import { FeedPage } from './pages/FeedPage';
 import { LoginPage } from './pages/LoginPage';
@@ -23,7 +24,7 @@ const MainLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white pb-16 md:pb-0">
       <div>
         <Navbar
           onOpenCreateModal={handleOpenCreateModal}
@@ -48,6 +49,13 @@ const MainLayout: React.FC = () => {
       </div>
 
       <Footer />
+
+      <BottomNav
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        onOpenReportModal={handleOpenCreateModal}
+        isAuthenticated={isAuthenticated}
+      />
 
       <CreateIssueModal
         isOpen={isCreateModalOpen}
