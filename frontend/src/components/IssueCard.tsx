@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ThumbsUp, MapPin, Calendar, Image as ImageIcon, History, Upload } from 'lucide-react';
+import { ThumbsUp, MapPin, Calendar, Image as ImageIcon, History, Upload, X, Download } from 'lucide-react';
 import { AuditLog, Issue } from '../types';
 import { StatusBadge } from './StatusBadge';
 import { issuesApi } from '../services/api';
@@ -23,6 +23,9 @@ export const IssueCard: React.FC<IssueCardProps> = ({
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isLoadingLogs, setIsLoadingLogs] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Lightbox Image Preview Modal State
+  const [previewImage, setPreviewImage] = useState<{ url: string; fileName: string } | null>(null);
 
   const handleUpvote = async () => {
     if (!isAuthenticated) {
@@ -68,6 +71,13 @@ export const IssueCard: React.FC<IssueCardProps> = ({
     }
   };
 
+  const openImagePreview = (e: React.MouseEvent, filePath: string, fileName: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const fullUrl = filePath.startsWith('http') ? filePath : filePath;
+    setPreviewImage({ url: fullUrl, fileName });
+  };
+
   const formattedDate = new Date(issue.created_at).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
@@ -105,23 +115,23 @@ export const IssueCard: React.FC<IssueCardProps> = ({
           </span>
         </div>
 
-        {/* Attachments Section */}
+        {/* Photos & Attachments Section */}
         {issue.attachments && issue.attachments.length > 0 && (
           <div className="mb-4">
             <span className="block text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1">
-              <ImageIcon className="w-3.5 h-3.5" /> Photos ({issue.attachments.length})
+              <ImageIcon className="w-3.5 h-3.5 text-indigo-400" /> Photos ({issue.attachments.length})
             </span>
             <div className="flex flex-wrap gap-2">
               {issue.attachments.map((att) => (
-                <a
+                <button
                   key={att.id}
-                  href={att.file_path}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs rounded-lg border border-slate-700 transition-colors truncate max-w-[200px]"
+                  type="button"
+                  onClick={(e) => openImagePreview(e, att.file_path, att.file_name)}
+                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-900/80 hover:bg-indigo-600/20 hover:border-indigo-500/50 text-slate-200 text-xs rounded-xl border border-slate-800 transition-all truncate max-w-[220px]"
                 >
-                  📸 {att.file_name}
-                </a>
+                  <span>📸</span>
+                  <span className="truncate font-medium">{att.file_name}</span>
+                </button>
               ))}
             </div>
           </div>
@@ -185,6 +195,58 @@ export const IssueCard: React.FC<IssueCardProps> = ({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* Full-Screen Lightbox Image Preview Modal */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-xl flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div
+            className="relative max-w-4xl w-full bg-slate-900 rounded-3xl border border-slate-800 p-4 shadow-2xl space-y-4 overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header Toolbar */}
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <div className="flex items-center space-x-2 truncate">
+                <ImageIcon className="w-5 h-5 text-indigo-400 shrink-0" />
+                <span className="text-sm font-semibold text-white truncate">{previewImage.fileName}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <a
+                  href={previewImage.url}
+                  download={previewImage.fileName}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Download</span>
+                </a>
+                <button
+                  type="button"
+                  onClick={() => setPreviewImage(null)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+            </div>
+
+            {/* Photo Viewer Container */}
+            <div className="flex items-center justify-center bg-black/60 rounded-2xl p-2 max-h-[70vh] overflow-hidden">
+              <img
+                src={previewImage.url}
+                alt={previewImage.fileName}
+                className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl shadow-lg"
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+              />
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -1,7 +1,9 @@
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from src.core.config import get_settings
 from src.core.database import AsyncSessionFactory, engine
 from src.domain.common.exceptions import DomainException
@@ -59,6 +61,11 @@ def create_application() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    # Ensure Uploads Directory Exists & Mount Static File Serving
+    upload_dir = settings.MEDIA_UPLOAD_DIR if hasattr(settings, "MEDIA_UPLOAD_DIR") else "uploads"
+    os.makedirs(upload_dir, exist_ok=True)
+    app.mount("/uploads", StaticFiles(directory=upload_dir), name="uploads")
 
     # Register Exception Handlers
     app.add_exception_handler(DomainException, domain_exception_handler)
