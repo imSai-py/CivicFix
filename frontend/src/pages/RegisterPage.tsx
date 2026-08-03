@@ -32,12 +32,17 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) =
       return;
     }
 
+    const cleanPhone = phone.trim();
+    const formattedPhone = cleanPhone
+      ? (cleanPhone.startsWith('+') ? cleanPhone : `+91 ${cleanPhone}`)
+      : undefined;
+
     try {
       await authApi.register({
         full_name: fullName.trim(),
         email: cleanEmail,
         password,
-        phone_number: phone ? (phone.startsWith('+') ? phone : `+91 ${phone}`) : undefined,
+        phone_number: formattedPhone,
       });
       setSuccessMessage('Registration successful! Redirecting to sign in...');
       setTimeout(() => {
@@ -138,15 +143,18 @@ export const RegisterPage: React.FC<RegisterPageProps> = ({ onSwitchToLogin }) =
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number (+91 India)</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-medium text-slate-300">Phone Number (+91 India)</label>
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Optional</span>
+          </div>
           <div className="relative">
             <Phone className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
             <input
               type="tel"
-              placeholder="+91 98765 43210"
+              placeholder="+91 98765 43210 (Optional)"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
+              className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 placeholder:text-slate-600"
             />
           </div>
         </div>
