@@ -2,16 +2,14 @@ import React from 'react';
 import { Home, Map, FilePlus, Bell, User } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab: 'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register';
-  setActiveTab: (tab: 'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register') => void;
-  onOpenReportModal: () => void;
+  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register';
+  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => void;
   isAuthenticated: boolean;
 }
 
 export const BottomNav: React.FC<BottomNavProps> = ({
   activeTab,
   setActiveTab,
-  onOpenReportModal,
   isAuthenticated,
 }) => {
   const isProfileActive = activeTab === 'profile' || activeTab === 'login' || activeTab === 'register';
@@ -47,11 +45,16 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           <span className="text-[10px] font-medium mt-1">Map</span>
         </button>
 
-        {/* Report Action Button */}
+        {/* Dedicated Report Page */}
         <button
-          onClick={onOpenReportModal}
-          className="flex flex-col items-center py-1 px-3 text-slate-400 hover:text-slate-200 transition-all"
+          onClick={() => (isAuthenticated ? setActiveTab('report') : setActiveTab('login'))}
+          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all relative ${
+            activeTab === 'report' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
+          }`}
         >
+          {activeTab === 'report' && (
+            <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500"></span>
+          )}
           <FilePlus className="w-5 h-5 text-indigo-400" />
           <span className="text-[10px] font-medium mt-1 text-slate-300">Report</span>
         </button>

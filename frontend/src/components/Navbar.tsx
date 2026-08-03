@@ -1,10 +1,10 @@
 import React from 'react';
-import { Shield, LayoutDashboard, MapPin, User as UserIcon } from 'lucide-react';
+import { Shield, LayoutDashboard, MapPin, User as UserIcon, FilePlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
-  activeTab: 'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register';
-  setActiveTab: (tab: 'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register') => void;
+  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register';
+  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
@@ -47,6 +47,18 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           >
             <MapPin className="w-4 h-4" />
             <span>GeoMap</span>
+          </button>
+
+          <button
+            onClick={() => (isAuthenticated ? setActiveTab('report') : setActiveTab('login'))}
+            className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              activeTab === 'report'
+                ? 'bg-indigo-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+            }`}
+          >
+            <FilePlus className="w-4 h-4" />
+            <span>Report</span>
           </button>
 
           {user && (user.role === 'OFFICIAL' || user.role === 'ADMIN') && (

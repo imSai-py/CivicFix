@@ -7,22 +7,13 @@ import { FeedPage } from './pages/FeedPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { ReportPage } from './pages/ReportPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
-import { CreateIssueModal } from './components/CreateIssueModal';
 import { GeoJSONMapView } from './components/GeoJSONMapView';
 
 const MainLayout: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register'>('feed');
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  const handleOpenCreateModal = () => {
-    if (!isAuthenticated) {
-      setActiveTab('login');
-    } else {
-      setIsCreateModalOpen(true);
-    }
-  };
+  const [activeTab, setActiveTab] = useState<'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register'>('feed');
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white pb-16 md:pb-0">
@@ -35,12 +26,19 @@ const MainLayout: React.FC = () => {
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {activeTab === 'feed' && <FeedPage isAuthenticated={isAuthenticated} />}
           {activeTab === 'map' && <GeoJSONMapView />}
+          {activeTab === 'report' && (
+            <ReportPage
+              isAuthenticated={isAuthenticated}
+              onSuccessNavigate={() => setActiveTab('feed')}
+              onSwitchToLogin={() => setActiveTab('login')}
+            />
+          )}
           {activeTab === 'admin' && <AdminDashboardPage />}
           {activeTab === 'profile' && <ProfilePage onSwitchToLogin={() => setActiveTab('login')} />}
           {activeTab === 'login' && (
             <LoginPage
               onSwitchToRegister={() => setActiveTab('register')}
-              onSuccess={() => setActiveTab('profile')}
+              onSuccess={() => setActiveTab('feed')}
             />
           )}
           {activeTab === 'register' && (
@@ -54,14 +52,7 @@ const MainLayout: React.FC = () => {
       <BottomNav
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onOpenReportModal={handleOpenCreateModal}
         isAuthenticated={isAuthenticated}
-      />
-
-      <CreateIssueModal
-        isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={() => setActiveTab('feed')}
       />
     </div>
   );
