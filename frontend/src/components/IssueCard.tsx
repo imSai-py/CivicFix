@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { ThumbsUp, MapPin, Calendar, Image as ImageIcon, History, Upload, X, Download } from 'lucide-react';
 import { AuditLog, Issue } from '../types';
 import { StatusBadge } from './StatusBadge';
-import { issuesApi } from '../services/api';
+import { issuesApi, getAttachmentUrl } from '../services/api';
 
 interface IssueCardProps {
   issue: Issue;
@@ -74,7 +74,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({
   const openImagePreview = (e: React.MouseEvent, filePath: string, fileName: string) => {
     e.preventDefault();
     e.stopPropagation();
-    const fullUrl = filePath.startsWith('http') ? filePath : filePath;
+    const fullUrl = getAttachmentUrl(filePath);
     setPreviewImage({ url: fullUrl, fileName });
   };
 
@@ -124,7 +124,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({
 
             <div className="grid grid-cols-2 gap-2">
               {issue.attachments.map((att) => {
-                const imgUrl = att.file_path.startsWith('http') ? att.file_path : att.file_path;
+                const imgUrl = getAttachmentUrl(att.file_path);
                 return (
                   <button
                     key={att.id}
@@ -136,11 +136,6 @@ export const IssueCard: React.FC<IssueCardProps> = ({
                       src={imgUrl}
                       alt={att.file_name}
                       className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
-                      onError={(e) => {
-                        // Fallback UI if image path is unavailable
-                        const target = e.target as HTMLElement;
-                        target.style.display = 'none';
-                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent flex items-end p-2 opacity-90 group-hover/img:opacity-100 transition-opacity">
                       <span className="text-[10px] font-semibold text-slate-200 truncate max-w-full">

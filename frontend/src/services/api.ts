@@ -35,6 +35,18 @@ export const setAuthTokens = (tokens: AuthTokens | null) => {
   }
 };
 
+export const getAttachmentUrl = (filePath: string): string => {
+  if (!filePath) return '';
+  if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
+    return filePath;
+  }
+  const cleanPath = filePath.startsWith('/') ? filePath : `/${filePath}`;
+  if (typeof window !== 'undefined' && (window.location.port === '3000' || window.location.port === '5173')) {
+    return `http://localhost:8000${cleanPath}`;
+  }
+  return cleanPath;
+};
+
 apiClient.interceptors.request.use((config) => {
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
