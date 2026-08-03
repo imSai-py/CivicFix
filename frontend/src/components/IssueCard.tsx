@@ -115,24 +115,41 @@ export const IssueCard: React.FC<IssueCardProps> = ({
           </span>
         </div>
 
-        {/* Photos & Attachments Section */}
+        {/* Inline Photo Evidence Grid */}
         {issue.attachments && issue.attachments.length > 0 && (
-          <div className="mb-4">
-            <span className="block text-xs font-semibold text-slate-400 mb-2 flex items-center gap-1">
-              <ImageIcon className="w-3.5 h-3.5 text-indigo-400" /> Photos ({issue.attachments.length})
+          <div className="mb-4 space-y-2">
+            <span className="block text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+              <ImageIcon className="w-4 h-4 text-indigo-400" /> Photo Evidence ({issue.attachments.length})
             </span>
-            <div className="flex flex-wrap gap-2">
-              {issue.attachments.map((att) => (
-                <button
-                  key={att.id}
-                  type="button"
-                  onClick={(e) => openImagePreview(e, att.file_path, att.file_name)}
-                  className="flex items-center space-x-1.5 px-3 py-1.5 bg-slate-900/80 hover:bg-indigo-600/20 hover:border-indigo-500/50 text-slate-200 text-xs rounded-xl border border-slate-800 transition-all truncate max-w-[220px]"
-                >
-                  <span>📸</span>
-                  <span className="truncate font-medium">{att.file_name}</span>
-                </button>
-              ))}
+
+            <div className="grid grid-cols-2 gap-2">
+              {issue.attachments.map((att) => {
+                const imgUrl = att.file_path.startsWith('http') ? att.file_path : att.file_path;
+                return (
+                  <button
+                    key={att.id}
+                    type="button"
+                    onClick={(e) => openImagePreview(e, att.file_path, att.file_name)}
+                    className="group/img relative rounded-xl overflow-hidden border border-slate-800 hover:border-indigo-500/60 aspect-video bg-slate-900 focus:outline-none transition-all shadow-sm"
+                  >
+                    <img
+                      src={imgUrl}
+                      alt={att.file_name}
+                      className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
+                      onError={(e) => {
+                        // Fallback UI if image path is unavailable
+                        const target = e.target as HTMLElement;
+                        target.style.display = 'none';
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/90 via-transparent to-transparent flex items-end p-2 opacity-90 group-hover/img:opacity-100 transition-opacity">
+                      <span className="text-[10px] font-semibold text-slate-200 truncate max-w-full">
+                        📸 {att.file_name}
+                      </span>
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
@@ -223,7 +240,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({
                   className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition-colors"
                 >
                   <Download className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Download</span>
+                  <span className="hidden sm:inline">Save Image</span>
                 </a>
                 <button
                   type="button"
@@ -241,9 +258,6 @@ export const IssueCard: React.FC<IssueCardProps> = ({
                 src={previewImage.url}
                 alt={previewImage.fileName}
                 className="max-h-[65vh] w-auto max-w-full object-contain rounded-xl shadow-lg"
-                onError={(e) => {
-                  (e.target as HTMLElement).style.display = 'none';
-                }}
               />
             </div>
           </div>
