@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { Camera, Upload, MapPin, Send, AlertCircle, CheckCircle, Trash2, Shield, X, Flame, AlertTriangle, Info, Tag } from 'lucide-react';
+import { Camera, Upload, MapPin, Send, AlertCircle, CheckCircle, Trash2, Shield, X, Flame, AlertTriangle, Info, Tag, HelpCircle } from 'lucide-react';
 import { categoriesApi, issuesApi } from '../services/api';
 import { Category, IssuePriority } from '../types';
 import { CustomDropdown, DropdownOption } from '../components/CustomDropdown';
@@ -18,6 +18,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [categoryId, setCategoryId] = useState('');
+  const [customCategoryQuery, setCustomCategoryQuery] = useState('');
   const [priority, setPriority] = useState<IssuePriority>('MEDIUM');
   const [latitude, setLatitude] = useState<number>(37.7749);
   const [longitude, setLongitude] = useState<number>(-122.4194);
@@ -130,6 +131,10 @@ export const ReportPage: React.FC<ReportPageProps> = ({
     }
   };
 
+  const selectedCategoryObj = categories.find((c) => c.id === categoryId);
+  const isOtherCategorySelected =
+    selectedCategoryObj?.name.toLowerCase().includes('other') || categoryId === 'OTHER';
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage('');
@@ -145,13 +150,23 @@ export const ReportPage: React.FC<ReportPageProps> = ({
       return;
     }
 
+    if (isOtherCategorySelected && !customCategoryQuery.trim()) {
+      setErrorMessage('Please specify your custom category query.');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      // Build final description incorporating custom category query if "Other" is selected
+      const finalDescription = isOtherCategorySelected
+        ? `[Custom Category Query: ${customCategoryQuery.trim()}]\n\n${description.trim()}`
+        : description.trim();
+
       // 1. Create Issue Report
       const issueRes = await issuesApi.create({
         title: title.trim(),
-        description: description.trim(),
+        description: finalDescription,
         category_id: categoryId,
         location: {
           latitude: Number(latitude),
@@ -185,12 +200,28 @@ export const ReportPage: React.FC<ReportPageProps> = ({
   };
 
   // Dropdown Options Configuration
-  const categoryOptions: DropdownOption[] = categories.map((c) => ({
-    value: c.id,
-    label: c.name,
-    description: c.description || undefined,
-    icon: <Tag className="w-3.5 h-3.5 text-indigo-400" />,
-  }));
+  const categoryOptions: DropdownOption[] = [
+    ...categories.map((c) => ({
+      value: c.id,
+      label: c.name,
+      description: c.description || undefined,
+      icon: c.name.toLowerCase().includes('other') ? (
+        <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />
+      ) : (
+        <Tag className="w-3.5 h-3.5 text-indigo-400" />
+      ),
+    })),
+  ];
+
+  // If "Other" is not yet in categories list from backend, add it manually
+  if (!categoryOptions.some((opt) => opt.label.toLowerCase().includes('other'))) {
+    categoryOptions.push({
+      value: 'OTHER',
+      label: 'Other',
+      description: 'Write your own custom issue category or query',
+      icon: <HelpCircle className="w-3.5 h-3.5 text-indigo-400" />,
+    });
+  }
 
   const priorityOptions: DropdownOption[] = [
     {
@@ -302,6 +333,24 @@ export const ReportPage: React.FC<ReportPageProps> = ({
             placeholder="Select urgency"
           />
         </div>
+
+        {/* Custom Category Query Input (Revealed when "Other" is selected) */}
+        {isOtherCategorySelected && (
+          <div className="p-4 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 space-y-2 animate-in fade-in duration-200">
+            <label className="block text-xs font-semibold text-indigo-300 flex items-center space-x-1.5">
+              <HelpCircle className="w-4 h-4 text-indigo-400" />
+              <span>Specify Other Category / Custom Query *</span>
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="Describe your custom issue category (e.g. Stray Animal Rescue, Damaged Bus Shelter)"
+              value={customCategoryQuery}
+              onChange={(e) => setCustomCategoryQuery(e.target.value)}
+              className="w-full bg-slate-950 border border-indigo-500/40 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-400"
+            />
+          </div>
+        )}
 
         {/* Description */}
         <div>

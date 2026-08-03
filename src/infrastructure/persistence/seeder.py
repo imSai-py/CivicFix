@@ -85,6 +85,33 @@ async def seed_initial_data(session: AsyncSession) -> None:
             default_sla_hours=24,
             is_active=True
         )
+        cat6 = CategoryModel(
+            id=uuid.uuid4(),
+            name="Other",
+            description="Custom citizen query or unlisted infrastructure category.",
+            default_department_id=pw_roads.id,
+            default_sla_hours=48,
+            is_active=True
+        )
 
-        session.add_all([cat1, cat2, cat3, cat4, cat5])
+        session.add_all([cat1, cat2, cat3, cat4, cat5, cat6])
         await session.commit()
+
+    # Ensure "Other" category exists if database was already partially seeded
+    cat_stmt = select(CategoryModel).where(CategoryModel.name == "Other")
+    cat_res = await session.execute(cat_stmt)
+    if not cat_res.scalar_one_or_none():
+        dept_stmt = select(DepartmentModel)
+        dept_res = await session.execute(dept_stmt)
+        first_dept = dept_res.scalars().first()
+        if first_dept:
+            other_cat = CategoryModel(
+                id=uuid.uuid4(),
+                name="Other",
+                description="Custom citizen query or unlisted infrastructure category.",
+                default_department_id=first_dept.id,
+                default_sla_hours=48,
+                is_active=True
+            )
+            session.add(other_cat)
+            await session.commit()
