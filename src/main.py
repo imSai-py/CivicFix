@@ -5,9 +5,13 @@ from fastapi.middleware.cors import CORSMiddleware
 from src.core.config import get_settings
 from src.core.database import engine
 from src.domain.common.exceptions import DomainException
+from src.infrastructure.persistence.base_model import BaseModel
+import src.infrastructure.persistence.models.user_model
+import src.infrastructure.persistence.models.issue_model
 from src.presentation.api.v1.router import api_v1_router
 from src.presentation.middlewares.error_handler import (
     domain_exception_handler,
+    general_exception_handler,
     validation_exception_handler
 )
 
@@ -18,7 +22,13 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """
     Application lifespan manager handling startup and shutdown procedures.
+    Automatically creates database tables on startup if they don't exist.
     """
+    try:
+        async with engine.begin() as conn:
+            await conn.run_sync(BaseModel.metadata.create_all)
+    except Exception as exc:
+        print(f"[CivicFix Startup Note] Database table init: {exc}")
     yield
     await engine.dispose()
 
@@ -49,6 +59,7 @@ def create_application() -> FastAPI:
     # Register Exception Handlers
     app.add_exception_handler(DomainException, domain_exception_handler)
     app.add_exception_handler(RequestValidationError, validation_exception_handler)
+    app.add_exception_handler(Exception, general_exception_handler)
 
     # Include API Routers
     app.include_router(api_v1_router, prefix=settings.API_V1_STR)

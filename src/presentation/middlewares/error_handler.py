@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import logging
 from fastapi import Request, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -10,6 +11,8 @@ from src.domain.common.exceptions import (
     InvalidTokenError,
     UnauthorizedAccessError
 )
+
+logger = logging.getLogger("civicfix.errors")
 
 
 async def domain_exception_handler(request: Request, exc: DomainException) -> JSONResponse:
@@ -67,6 +70,26 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
             "error": {
                 "code": "VALIDATION_ERROR",
                 "message": message,
+                "timestamp": timestamp,
+                "path": str(request.url.path)
+            }
+        }
+    )
+
+
+async def general_exception_handler(request: Request, exc: Exception) -> JSONResponse:
+    """
+    Catch-all exception handler for unexpected 500 errors.
+    """
+    timestamp = datetime.now(timezone.utc).isoformat()
+    logger.error(f"Unhandled Internal Server Exception at {request.url.path}: {str(exc)}", exc_info=True)
+
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "error": {
+                "code": "INTERNAL_SERVER_ERROR",
+                "message": f"Server database/system error: {str(exc)}",
                 "timestamp": timestamp,
                 "path": str(request.url.path)
             }
