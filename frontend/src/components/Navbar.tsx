@@ -1,15 +1,14 @@
 import React from 'react';
-import { Shield, PlusCircle, LogOut, LayoutDashboard, MapPin } from 'lucide-react';
+import { Shield, LayoutDashboard, MapPin, User as UserIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
-  onOpenCreateModal: () => void;
-  activeTab: 'feed' | 'map' | 'admin';
-  setActiveTab: (tab: 'feed' | 'map' | 'admin') => void;
+  activeTab: 'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register';
+  setActiveTab: (tab: 'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register') => void;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenCreateModal, activeTab, setActiveTab }) => {
-  const { user, isAuthenticated, logout } = useAuth();
+export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
+  const { user, isAuthenticated } = useAuth();
 
   return (
     <header className="sticky top-0 z-40 glass-panel border-b border-slate-800">
@@ -63,48 +62,54 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCreateModal, activeTab, se
               <span>Admin Console</span>
             </button>
           )}
+
+          {isAuthenticated && (
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'profile'
+                  ? 'bg-indigo-600 text-white shadow-md'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+              }`}
+            >
+              <UserIcon className="w-4 h-4" />
+              <span>Profile</span>
+            </button>
+          )}
         </nav>
 
         {/* Right Actions */}
         <div className="flex items-center space-x-3">
           {isAuthenticated ? (
-            <>
-              <button
-                onClick={onOpenCreateModal}
-                className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/30 hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Report Issue</span>
-              </button>
-
-              <div className="flex items-center space-x-3 pl-3 border-l border-slate-800">
-                <div className="text-right hidden sm:block">
-                  <div className="text-sm font-medium text-slate-200">{user?.full_name}</div>
-                  <div className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider">{user?.role}</div>
-                </div>
-                <button
-                  onClick={logout}
-                  title="Logout"
-                  className="p-2 rounded-xl text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 transition-all"
-                >
-                  <LogOut className="w-5 h-5" />
-                </button>
+            <button
+              onClick={() => setActiveTab('profile')}
+              className={`flex items-center space-x-2.5 px-3 py-1.5 rounded-xl border transition-all ${
+                activeTab === 'profile'
+                  ? 'bg-indigo-600/20 border-indigo-500/50 text-white'
+                  : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700'
+              }`}
+            >
+              <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">
+                {user?.full_name.charAt(0).toUpperCase()}
               </div>
-            </>
+              <div className="text-left hidden sm:block">
+                <div className="text-xs font-semibold text-slate-200">{user?.full_name}</div>
+                <div className="text-[10px] text-indigo-400 font-medium uppercase tracking-wider">{user?.role}</div>
+              </div>
+            </button>
           ) : (
             <div className="flex items-center space-x-2">
-              <a
-                href="#login"
-                onClick={() => setActiveTab('feed')}
+              <button
+                onClick={() => setActiveTab('login')}
                 className="px-4 py-2 rounded-xl text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800 transition-all"
               >
                 Login
-              </a>
+              </button>
               <button
-                onClick={onOpenCreateModal}
+                onClick={() => setActiveTab('register')}
                 className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-medium transition-all shadow-lg shadow-indigo-600/30"
               >
-                Report Issue
+                Register
               </button>
             </div>
           )}

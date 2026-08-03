@@ -68,6 +68,10 @@ export const authApi = {
   register: (data: any) => apiClient.post<User>('/auth/register', data),
   login: (data: any) => apiClient.post<AuthTokens>('/auth/login', data),
   getMe: () => apiClient.get<User>('/users/me'),
+  updateProfile: (data: { full_name?: string; phone_number?: string }) =>
+    apiClient.patch<User>('/users/me', data),
+  changePassword: (data: { current_password: string; new_password: string }) =>
+    apiClient.post<{ message: string }>('/users/me/change-password', data),
 };
 
 export const issuesApi = {

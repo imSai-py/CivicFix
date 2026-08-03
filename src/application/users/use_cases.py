@@ -1,10 +1,12 @@
 import uuid
 from src.application.common.uow import AbstractUnitOfWork
 from src.application.users.dtos import (
+    ChangePasswordDTO,
     LoginDTO,
     RefreshTokenDTO,
     RegisterUserDTO,
     TokenResponseDTO,
+    UpdateUserProfileDTO,
     UserResponseDTO
 )
 from src.core.config import get_settings
@@ -175,3 +177,57 @@ class GetCurrentUserUseCase:
                 is_active=user.is_active,
                 created_at=user.created_at
             )
+
+
+class UpdateUserProfileUseCase:
+    """
+    Use case for updating full name and phone number.
+    """
+    def __init__(self, uow: AbstractUnitOfWork):
+        self.uow = uow
+
+    async def execute(self, user_id: uuid.UUID, dto: UpdateUserProfileDTO) -> UserResponseDTO:
+        async with self.uow:
+            user = await self.uow.users.get_by_id(user_id)
+            if not user:
+                raise EntityNotFoundError("User", str(user_id))
+
+            if dto.full_name is not None:
+                user.full_name = dto.full_name
+            if dto.phone_number is not None:
+                user.phone_number = dto.phone_number
+
+            saved_user = await self.uow.users.save(user)
+            await self.uow.commit()
+
+            return UserResponseDTO(
+                id=saved_user.id,
+                email=saved_user.email.value,
+                full_name=saved_user.full_name,
+                role=saved_user.role,
+                phone_number=saved_user.phone_number,
+                is_active=saved_user.is_active,
+                created_at=saved_user.created_at
+            )
+
+
+class ChangePasswordUseCase:
+    """
+    Use case for changing user password after verifying current password.
+    """
+    def __init__(self, uow: AbstractUnitOfWork, hasher: PasswordHasherInterface):
+        self.uow = uow
+        self.hasher = hasher
+
+    async def execute(self, user_id: uuid.UUID, dto: ChangePasswordDTO) -> None:
+        async with self.uow:
+            user = await self.uow.users.get_by_id(user_id)
+            if not user:
+                raise EntityNotFoundError("User", str(user_id))
+
+            if not self.hasher.verify_password(dto.current_password, user.password_hash):
+                raise InvalidCredentialsError("Current password is incorrect.")
+
+            user.password_hash = self.hasher.hash_password(dto.new_password)
+            await self.uow.users.save(user)
+            await self.uow.commit()

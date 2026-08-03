@@ -2,8 +2,8 @@ import React from 'react';
 import { Home, Map, FilePlus, Bell, User } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab: 'feed' | 'map' | 'admin' | 'login' | 'register';
-  setActiveTab: (tab: 'feed' | 'map' | 'admin' | 'login' | 'register') => void;
+  activeTab: 'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register';
+  setActiveTab: (tab: 'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register') => void;
   onOpenReportModal: () => void;
   isAuthenticated: boolean;
 }
@@ -14,6 +14,8 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   onOpenReportModal,
   isAuthenticated,
 }) => {
+  const isProfileActive = activeTab === 'profile' || activeTab === 'login' || activeTab === 'register';
+
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-1.5 md:hidden">
       <div className="flex items-center justify-around max-w-md mx-auto">
@@ -70,12 +72,12 @@ export const BottomNav: React.FC<BottomNavProps> = ({
 
         {/* Profile / Auth */}
         <button
-          onClick={() => (isAuthenticated ? setActiveTab('feed') : setActiveTab('login'))}
+          onClick={() => (isAuthenticated ? setActiveTab('profile') : setActiveTab('login'))}
           className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all relative ${
-            activeTab === 'login' || activeTab === 'register' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
+            isProfileActive ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
           }`}
         >
-          { (activeTab === 'login' || activeTab === 'register') && (
+          {isProfileActive && (
             <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500"></span>
           )}
           <User className="w-5 h-5" />

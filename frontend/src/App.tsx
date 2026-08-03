@@ -6,13 +6,14 @@ import { Footer } from './components/Footer';
 import { FeedPage } from './pages/FeedPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { ProfilePage } from './pages/ProfilePage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { CreateIssueModal } from './components/CreateIssueModal';
 import { GeoJSONMapView } from './components/GeoJSONMapView';
 
 const MainLayout: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'map' | 'admin' | 'login' | 'register'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'map' | 'admin' | 'profile' | 'login' | 'register'>('feed');
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const handleOpenCreateModal = () => {
@@ -27,8 +28,7 @@ const MainLayout: React.FC = () => {
     <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white pb-16 md:pb-0">
       <div>
         <Navbar
-          onOpenCreateModal={handleOpenCreateModal}
-          activeTab={activeTab === 'admin' ? 'admin' : activeTab === 'map' ? 'map' : 'feed'}
+          activeTab={activeTab}
           setActiveTab={(tab) => setActiveTab(tab)}
         />
 
@@ -36,10 +36,11 @@ const MainLayout: React.FC = () => {
           {activeTab === 'feed' && <FeedPage isAuthenticated={isAuthenticated} />}
           {activeTab === 'map' && <GeoJSONMapView />}
           {activeTab === 'admin' && <AdminDashboardPage />}
+          {activeTab === 'profile' && <ProfilePage onSwitchToLogin={() => setActiveTab('login')} />}
           {activeTab === 'login' && (
             <LoginPage
               onSwitchToRegister={() => setActiveTab('register')}
-              onSuccess={() => setActiveTab('feed')}
+              onSuccess={() => setActiveTab('profile')}
             />
           )}
           {activeTab === 'register' && (
