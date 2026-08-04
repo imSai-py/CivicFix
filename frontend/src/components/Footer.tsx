@@ -10,9 +10,6 @@ export const Footer: React.FC = () => {
           <span className="font-semibold text-slate-300">CivicFix Enterprise Platform</span>
           <span>&copy; {new Date().getFullYear()} All rights reserved.</span>
         </div>
-        <div className="flex items-center space-x-1">
-          <span>Built with Clean Architecture, FastAPI, PostgreSQL & React</span>
-        </div>
       </div>
     </footer>
   );
