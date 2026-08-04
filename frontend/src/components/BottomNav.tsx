@@ -1,9 +1,9 @@
 import React from 'react';
-import { Home, Map, FilePlus, Bell, User } from 'lucide-react';
+import { Home, Map, FilePlus, User } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register';
-  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register') => void;
+  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register';
+  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => void;
   isAuthenticated: boolean;
 }
 
@@ -12,7 +12,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   setActiveTab,
   isAuthenticated,
 }) => {
-  const isProfileActive = activeTab === 'profile' || activeTab === 'login' || activeTab === 'register' || activeTab === 'admin-login';
+  const isProfileActive = activeTab === 'profile' || activeTab === 'login' || activeTab === 'register';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-1.5 md:hidden">
@@ -57,20 +57,6 @@ export const BottomNav: React.FC<BottomNavProps> = ({
           )}
           <FilePlus className="w-5 h-5 text-indigo-400" />
           <span className="text-[10px] font-medium mt-1 text-slate-300">Report</span>
-        </button>
-
-        {/* Updates / Admin Console */}
-        <button
-          onClick={() => setActiveTab('admin')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all relative ${
-            activeTab === 'admin' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {activeTab === 'admin' && (
-            <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500"></span>
-          )}
-          <Bell className="w-5 h-5" />
-          <span className="text-[10px] font-medium mt-1">Updates</span>
         </button>
 
         {/* Profile / Auth */}

@@ -5,16 +5,24 @@ import { BottomNav } from './components/BottomNav';
 import { Footer } from './components/Footer';
 import { FeedPage } from './pages/FeedPage';
 import { LoginPage } from './pages/LoginPage';
-import { AdminLoginPage } from './pages/AdminLoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { ReportPage } from './pages/ReportPage';
 import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { GeoJSONMapView } from './components/GeoJSONMapView';
+import { UserRole } from './types';
 
 const MainLayout: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register'>('feed');
+  const [activeTab, setActiveTab] = useState<'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register'>('feed');
+
+  const handleLoginSuccess = (role?: UserRole) => {
+    if (role === 'OFFICIAL' || role === 'ADMIN') {
+      setActiveTab('admin');
+    } else {
+      setActiveTab('feed');
+    }
+  };
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white pb-16 md:pb-0">
@@ -35,17 +43,11 @@ const MainLayout: React.FC = () => {
             />
           )}
           {activeTab === 'admin' && <AdminDashboardPage />}
-          {activeTab === 'admin-login' && (
-            <AdminLoginPage
-              onSuccess={() => setActiveTab('admin')}
-              onSwitchToCitizenLogin={() => setActiveTab('login')}
-            />
-          )}
           {activeTab === 'profile' && <ProfilePage onSwitchToLogin={() => setActiveTab('login')} />}
           {activeTab === 'login' && (
             <LoginPage
               onSwitchToRegister={() => setActiveTab('register')}
-              onSuccess={() => setActiveTab('feed')}
+              onSuccess={(role) => handleLoginSuccess(role)}
             />
           )}
           {activeTab === 'register' && (
@@ -54,7 +56,7 @@ const MainLayout: React.FC = () => {
         </main>
       </div>
 
-      <Footer />
+      <Footer onOpenStaffLogin={() => setActiveTab('login')} />
 
       <BottomNav
         activeTab={activeTab}

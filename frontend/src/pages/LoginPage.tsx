@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Lock, Mail, Shield, AlertCircle, Eye, EyeOff } from 'lucide-react';
+import { Lock, Mail, Shield, AlertCircle, Eye, EyeOff, Building2, KeyRound } from 'lucide-react';
 import { authApi } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { UserRole } from '../types';
 
 interface LoginPageProps {
   onSwitchToRegister: () => void;
-  onSuccess: () => void;
+  onSuccess: (role?: UserRole) => void;
 }
 
 export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSuccess }) => {
@@ -15,6 +16,17 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [showStaffHelper, setShowStaffHelper] = useState(false);
+
+  const fillAdminCredentials = () => {
+    setEmail('admin@civicfix.gov');
+    setPassword('AdminPassword123!');
+  };
+
+  const fillOfficialCredentials = () => {
+    setEmail('official@civicfix.gov');
+    setPassword('OfficialPassword123!');
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,7 +36,12 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
     try {
       const res = await authApi.login({ email: email.trim(), password });
       await login(res.data);
-      onSuccess();
+      
+      // Fetch user profile to detect role and route accordingly
+      const meRes = await authApi.getMe();
+      const userRole = meRes.data.role;
+
+      onSuccess(userRole);
     } catch (err: any) {
       if (!err.response) {
         setErrorMessage('Cannot connect to backend server. Please start the FastAPI backend server using: python -m uvicorn src.main:app --reload --port 8000');
@@ -42,13 +59,13 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
   };
 
   return (
-    <div className="max-w-md mx-auto my-12 glass-panel p-8 rounded-3xl shadow-2xl border border-indigo-500/20 glow-indigo">
+    <div className="max-w-md mx-auto my-10 glass-panel p-8 rounded-3xl shadow-2xl border border-indigo-500/20 glow-indigo">
       <div className="text-center mb-8">
         <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto mb-3 shadow-lg shadow-indigo-500/30">
           <Shield className="w-7 h-7 text-white" />
         </div>
         <h2 className="text-2xl font-bold text-white">Welcome Back</h2>
-        <p className="text-xs text-slate-400 mt-1">Authenticate to access municipal features</p>
+        <p className="text-xs text-slate-400 mt-1">Sign in to report issues or access municipal operations</p>
       </div>
 
       {errorMessage && (
@@ -111,6 +128,42 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
         <button onClick={onSwitchToRegister} className="text-indigo-400 font-semibold hover:underline">
           Register Citizen Account
         </button>
+      </div>
+
+      {/* Discreet Staff Portal Helper Toggle */}
+      <div className="mt-6 pt-4 border-t border-slate-800/80 text-center">
+        <button
+          type="button"
+          onClick={() => setShowStaffHelper(!showStaffHelper)}
+          className="text-[11px] text-slate-500 hover:text-amber-400 font-medium inline-flex items-center gap-1 transition-colors"
+        >
+          <Building2 className="w-3 h-3" />
+          <span>{showStaffHelper ? 'Hide Staff Presets' : 'Municipal Staff Login'}</span>
+        </button>
+
+        {showStaffHelper && (
+          <div className="mt-3 p-3 bg-slate-900/90 rounded-2xl border border-amber-500/20 text-left space-y-2 animate-in fade-in duration-200">
+            <span className="block text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+              <KeyRound className="w-3 h-3" /> Demo Official Accounts
+            </span>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={fillAdminCredentials}
+                className="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 text-[10px] font-semibold border border-slate-700 hover:border-amber-500/40 transition-all text-center"
+              >
+                System Admin
+              </button>
+              <button
+                type="button"
+                onClick={fillOfficialCredentials}
+                className="px-2 py-1.5 rounded-lg bg-slate-800 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 text-[10px] font-semibold border border-slate-700 hover:border-amber-500/40 transition-all text-center"
+              >
+                Official Staff
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

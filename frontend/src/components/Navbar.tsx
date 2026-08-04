@@ -1,15 +1,14 @@
 import React from 'react';
-import { Shield, LayoutDashboard, MapPin, User as UserIcon, FilePlus, ShieldAlert } from 'lucide-react';
+import { Shield, LayoutDashboard, MapPin, User as UserIcon, FilePlus } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
-  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register';
-  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register') => void;
+  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register';
+  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const { user, isAuthenticated } = useAuth();
-
   const isOfficialOrAdmin = user && (user.role === 'OFFICIAL' || user.role === 'ADMIN');
 
   return (
@@ -26,7 +25,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           </div>
         </div>
 
-        {/* Center Navigation Tabs */}
+        {/* Center Navigation Tabs - Clean Public Nav */}
         <nav className="hidden md:flex items-center space-x-1 bg-slate-900/60 p-1.5 rounded-xl border border-slate-800">
           <button
             onClick={() => setActiveTab('feed')}
@@ -63,7 +62,8 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             <span>Report</span>
           </button>
 
-          {isOfficialOrAdmin ? (
+          {/* Admin Console ONLY visible when already authenticated as Official/Admin */}
+          {isOfficialOrAdmin && (
             <button
               onClick={() => setActiveTab('admin')}
               className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
@@ -73,19 +73,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
-              <span>Admin Console</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setActiveTab('admin-login')}
-              className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                activeTab === 'admin-login'
-                  ? 'bg-amber-600 text-white shadow-md'
-                  : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
-              }`}
-            >
-              <ShieldAlert className="w-4 h-4" />
-              <span>Admin Portal</span>
+              <span>Operations Console</span>
             </button>
           )}
 
