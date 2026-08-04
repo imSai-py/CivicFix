@@ -2,8 +2,8 @@ import React from 'react';
 import { Home, Map, FilePlus, Bell, User } from 'lucide-react';
 
 interface BottomNavProps {
-  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register';
-  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => void;
+  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register';
+  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register') => void;
   isAuthenticated: boolean;
 }
 
@@ -12,7 +12,7 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   setActiveTab,
   isAuthenticated,
 }) => {
-  const isProfileActive = activeTab === 'profile' || activeTab === 'login' || activeTab === 'register';
+  const isProfileActive = activeTab === 'profile' || activeTab === 'login' || activeTab === 'register' || activeTab === 'admin-login';
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-1.5 md:hidden">

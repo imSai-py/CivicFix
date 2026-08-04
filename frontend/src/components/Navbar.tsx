@@ -1,14 +1,16 @@
 import React from 'react';
-import { Shield, LayoutDashboard, MapPin, User as UserIcon, FilePlus } from 'lucide-react';
+import { Shield, LayoutDashboard, MapPin, User as UserIcon, FilePlus, ShieldAlert } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
-  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register';
-  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => void;
+  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register';
+  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'admin-login' | 'profile' | 'login' | 'register') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const { user, isAuthenticated } = useAuth();
+
+  const isOfficialOrAdmin = user && (user.role === 'OFFICIAL' || user.role === 'ADMIN');
 
   return (
     <header className="sticky top-0 z-40 glass-panel border-b border-slate-800">
@@ -61,17 +63,29 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             <span>Report</span>
           </button>
 
-          {user && (user.role === 'OFFICIAL' || user.role === 'ADMIN') && (
+          {isOfficialOrAdmin ? (
             <button
               onClick={() => setActiveTab('admin')}
               className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 activeTab === 'admin'
-                  ? 'bg-indigo-600 text-white shadow-md'
-                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
+                  ? 'bg-amber-600 text-white shadow-md'
+                  : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
               }`}
             >
               <LayoutDashboard className="w-4 h-4" />
               <span>Admin Console</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setActiveTab('admin-login')}
+              className={`flex items-center space-x-1.5 px-4 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                activeTab === 'admin-login'
+                  ? 'bg-amber-600 text-white shadow-md'
+                  : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
+              }`}
+            >
+              <ShieldAlert className="w-4 h-4" />
+              <span>Admin Portal</span>
             </button>
           )}
 
@@ -101,12 +115,16 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
                   : 'bg-slate-900/80 border-slate-800 text-slate-300 hover:border-slate-700'
               }`}
             >
-              <div className="w-7 h-7 rounded-lg bg-indigo-600 text-white font-bold flex items-center justify-center text-xs">
+              <div className={`w-7 h-7 rounded-lg font-bold flex items-center justify-center text-xs text-white ${
+                isOfficialOrAdmin ? 'bg-amber-600' : 'bg-indigo-600'
+              }`}>
                 {user?.full_name.charAt(0).toUpperCase()}
               </div>
               <div className="text-left hidden sm:block">
                 <div className="text-xs font-semibold text-slate-200">{user?.full_name}</div>
-                <div className="text-[10px] text-indigo-400 font-medium uppercase tracking-wider">{user?.role}</div>
+                <div className={`text-[10px] font-bold uppercase tracking-wider ${
+                  isOfficialOrAdmin ? 'text-amber-400' : 'text-indigo-400'
+                }`}>{user?.role}</div>
               </div>
             </button>
           ) : (

@@ -1,13 +1,19 @@
 import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from src.domain.users.user_entity import UserRole
 from src.infrastructure.persistence.models.issue_model import CategoryModel, DepartmentModel
+from src.infrastructure.persistence.models.user_model import UserModel
+from src.infrastructure.security.password_hasher import BcryptPasswordHasher
 
 
 async def seed_initial_data(session: AsyncSession) -> None:
     """
-    Seeds default municipal departments and issue categories if they do not exist.
+    Seeds default municipal departments, issue categories, and administrative users if they do not exist.
     """
+    hasher = BcryptPasswordHasher()
+
+    # 1. Seed Municipal Departments & Categories
     stmt = select(DepartmentModel)
     res = await session.execute(stmt)
     existing_dept = res.first()
@@ -115,3 +121,34 @@ async def seed_initial_data(session: AsyncSession) -> None:
             )
             session.add(other_cat)
             await session.commit()
+
+    # 2. Seed Default Administrative & Official Users
+    admin_stmt = select(UserModel).where(UserModel.email == "admin@civicfix.gov")
+    admin_res = await session.execute(admin_stmt)
+    if not admin_res.scalar_one_or_none():
+        admin_user = UserModel(
+            id=uuid.uuid4(),
+            email="admin@civicfix.gov",
+            password_hash=hasher.hash_password("AdminPassword123!"),
+            full_name="Chief Municipal Administrator",
+            role=UserRole.ADMIN,
+            phone_number="+91 9876543210",
+            is_active=True
+        )
+        session.add(admin_user)
+        await session.commit()
+
+    official_stmt = select(UserModel).where(UserModel.email == "official@civicfix.gov")
+    official_res = await session.execute(official_stmt)
+    if not official_res.scalar_one_or_none():
+        official_user = UserModel(
+            id=uuid.uuid4(),
+            email="official@civicfix.gov",
+            password_hash=hasher.hash_password("OfficialPassword123!"),
+            full_name="Public Works Operations Official",
+            role=UserRole.OFFICIAL,
+            phone_number="+91 9876543211",
+            is_active=True
+        )
+        session.add(official_user)
+        await session.commit()
