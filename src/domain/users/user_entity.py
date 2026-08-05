@@ -26,6 +26,7 @@ class User(BaseEntity):
     full_name: str = ""
     role: UserRole = UserRole.CITIZEN
     phone_number: Optional[str] = None
+    avatar_url: Optional[str] = None
     is_active: bool = True
     xp_points: int = 0
     reputation_rank: str = "Civic Watcher"
@@ -40,12 +41,14 @@ class User(BaseEntity):
         self.is_active = True
         self.mark_updated()
 
-    def update_profile(self, full_name: Optional[str] = None, phone_number: Optional[str] = None) -> None:
+    def update_profile(self, full_name: Optional[str] = None, phone_number: Optional[str] = None, avatar_url: Optional[str] = None) -> None:
         """Updates user profile metadata."""
         if full_name:
             self.full_name = full_name
         if phone_number is not None:
             self.phone_number = phone_number
+        if avatar_url is not None:
+            self.avatar_url = avatar_url
         self.mark_updated()
 
     def add_xp(self, points: int) -> int:

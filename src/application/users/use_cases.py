@@ -20,6 +20,7 @@ from src.domain.common.value_objects import EmailAddress
 from src.domain.users.user_entity import User, UserRole
 from src.infrastructure.security.jwt_handler import JWTHandlerInterface
 from src.infrastructure.security.password_hasher import PasswordHasherInterface
+from src.infrastructure.storage.interface import StorageAdapterInterface
 
 settings = get_settings()
 
@@ -63,6 +64,7 @@ class RegisterUserUseCase:
                 full_name=saved_user.full_name,
                 role=saved_user.role,
                 phone_number=saved_user.phone_number,
+                avatar_url=saved_user.avatar_url,
                 is_active=saved_user.is_active,
                 xp_points=saved_user.xp_points,
                 reputation_rank=saved_user.reputation_rank,
@@ -176,6 +178,7 @@ class GetCurrentUserUseCase:
                 full_name=user.full_name,
                 role=user.role,
                 phone_number=user.phone_number,
+                avatar_url=user.avatar_url,
                 is_active=user.is_active,
                 xp_points=user.xp_points,
                 reputation_rank=user.reputation_rank,
@@ -185,7 +188,7 @@ class GetCurrentUserUseCase:
 
 class UpdateUserProfileUseCase:
     """
-    Use case for updating full name and phone number.
+    Use case for updating full name, phone number, or avatar_url.
     """
     def __init__(self, uow: AbstractUnitOfWork):
         self.uow = uow
@@ -200,6 +203,8 @@ class UpdateUserProfileUseCase:
                 user.full_name = dto.full_name
             if dto.phone_number is not None:
                 user.phone_number = dto.phone_number
+            if dto.avatar_url is not None:
+                user.avatar_url = dto.avatar_url
 
             saved_user = await self.uow.users.save(user)
             await self.uow.commit()
@@ -210,6 +215,46 @@ class UpdateUserProfileUseCase:
                 full_name=saved_user.full_name,
                 role=saved_user.role,
                 phone_number=saved_user.phone_number,
+                avatar_url=saved_user.avatar_url,
+                is_active=saved_user.is_active,
+                xp_points=saved_user.xp_points,
+                reputation_rank=saved_user.reputation_rank,
+                created_at=saved_user.created_at
+            )
+
+
+class UploadAvatarUseCase:
+    """Use case for uploading and updating user profile avatar image."""
+    def __init__(self, uow: AbstractUnitOfWork, storage: StorageAdapterInterface):
+        self.uow = uow
+        self.storage = storage
+
+    async def execute(
+        self,
+        user_id: uuid.UUID,
+        file_bytes: bytes,
+        file_name: str,
+        mime_type: str
+    ) -> UserResponseDTO:
+        async with self.uow:
+            user = await self.uow.users.get_by_id(user_id)
+            if not user:
+                raise EntityNotFoundError("User", str(user_id))
+
+            clean_filename = f"avatars/{uuid.uuid4()}_{file_name}"
+            rel_path = await self.storage.upload(file_bytes, clean_filename, mime_type)
+
+            user.avatar_url = rel_path
+            saved_user = await self.uow.users.save(user)
+            await self.uow.commit()
+
+            return UserResponseDTO(
+                id=saved_user.id,
+                email=saved_user.email.value,
+                full_name=saved_user.full_name,
+                role=saved_user.role,
+                phone_number=saved_user.phone_number,
+                avatar_url=saved_user.avatar_url,
                 is_active=saved_user.is_active,
                 xp_points=saved_user.xp_points,
                 reputation_rank=saved_user.reputation_rank,

@@ -10,6 +10,7 @@ export interface User {
   full_name: string;
   role: UserRole;
   phone_number?: string;
+  avatar_url?: string;
   is_active: boolean;
   xp_points?: number;
   reputation_rank?: string;

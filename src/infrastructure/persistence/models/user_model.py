@@ -22,6 +22,7 @@ class UserModel(BaseModel):
         index=True
     )
     phone_number: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
+    avatar_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
     xp_points: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     reputation_rank: Mapped[str] = mapped_column(String(100), default="Civic Watcher", nullable=False)
@@ -35,6 +36,7 @@ class UserModel(BaseModel):
             full_name=self.full_name,
             role=self.role,
             phone_number=self.phone_number,
+            avatar_url=self.avatar_url,
             is_active=self.is_active,
             xp_points=self.xp_points,
             reputation_rank=self.reputation_rank,
@@ -52,6 +54,7 @@ class UserModel(BaseModel):
             full_name=domain.full_name,
             role=domain.role,
             phone_number=domain.phone_number,
+            avatar_url=domain.avatar_url,
             is_active=domain.is_active,
             xp_points=domain.xp_points,
             reputation_rank=domain.reputation_rank,

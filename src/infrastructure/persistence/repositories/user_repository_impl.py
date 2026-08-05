@@ -38,6 +38,7 @@ class UserRepositoryImpl(UserRepositoryInterface):
             existing_model.full_name = user.full_name
             existing_model.role = user.role
             existing_model.phone_number = user.phone_number
+            existing_model.avatar_url = user.avatar_url
             existing_model.is_active = user.is_active
             existing_model.xp_points = user.xp_points
             existing_model.reputation_rank = user.reputation_rank

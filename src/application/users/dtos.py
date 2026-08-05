@@ -28,6 +28,7 @@ class UpdateUserProfileDTO(BaseModel):
     """Input payload for updating user profile."""
     full_name: Optional[str] = Field(None, min_length=2, max_length=150)
     phone_number: Optional[str] = Field(None, max_length=30)
+    avatar_url: Optional[str] = Field(None, max_length=512)
 
 
 class ChangePasswordDTO(BaseModel):
@@ -53,6 +54,7 @@ class UserResponseDTO(BaseModel):
     full_name: str
     role: UserRole
     phone_number: Optional[str] = None
+    avatar_url: Optional[str] = None
     is_active: bool
     xp_points: int = 0
     reputation_rank: str = "Civic Watcher"

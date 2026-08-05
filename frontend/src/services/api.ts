@@ -84,6 +84,13 @@ export const authApi = {
     apiClient.patch<User>('/users/me', data),
   changePassword: (data: { current_password: string; new_password: string }) =>
     apiClient.post<{ message: string }>('/users/me/change-password', data),
+  uploadAvatar: (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return apiClient.post<User>('/users/me/avatar', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 export const issuesApi = {

@@ -1,5 +1,5 @@
 import uuid
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from src.application.common.uow import AbstractUnitOfWork
 from src.application.users.dtos import (
     ChangePasswordDTO,
@@ -9,14 +9,17 @@ from src.application.users.dtos import (
 from src.application.users.use_cases import (
     ChangePasswordUseCase,
     GetCurrentUserUseCase,
-    UpdateUserProfileUseCase
+    UpdateUserProfileUseCase,
+    UploadAvatarUseCase
 )
 from src.domain.users.user_entity import UserRole
 from src.infrastructure.security.password_hasher import BcryptPasswordHasher
+from src.infrastructure.storage.interface import StorageAdapterInterface
 from src.presentation.api.dependencies import (
     RoleChecker,
     get_current_user_claims,
     get_password_hasher,
+    get_storage_adapter,
     get_uow
 )
 
@@ -48,6 +51,30 @@ async def update_current_user_profile(
     user_id = uuid.UUID(claims["sub"])
     use_case = UpdateUserProfileUseCase(uow=uow)
     return await use_case.execute(user_id=user_id, dto=dto)
+
+
+@router.post("/me/avatar", response_model=UserResponseDTO, status_code=status.HTTP_200_OK)
+async def upload_user_avatar(
+    file: UploadFile = File(...),
+    claims: dict = Depends(get_current_user_claims),
+    uow: AbstractUnitOfWork = Depends(get_uow),
+    storage: StorageAdapterInterface = Depends(get_storage_adapter)
+):
+    """
+    Uploads and updates current user's profile avatar photo.
+    """
+    user_id = uuid.UUID(claims["sub"])
+    file_bytes = await file.read()
+    file_name = file.filename or "avatar.jpg"
+    mime_type = file.content_type or "image/jpeg"
+
+    use_case = UploadAvatarUseCase(uow=uow, storage=storage)
+    return await use_case.execute(
+        user_id=user_id,
+        file_bytes=file_bytes,
+        file_name=file_name,
+        mime_type=mime_type
+    )
 
 
 @router.post("/me/change-password", status_code=status.HTTP_200_OK)

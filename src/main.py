@@ -36,6 +36,7 @@ async def lifespan(app: FastAPI):
             columns_to_ensure = [
                 ("users", "xp_points", "INTEGER DEFAULT 0 NOT NULL"),
                 ("users", "reputation_rank", "VARCHAR(100) DEFAULT 'Civic Watcher' NOT NULL"),
+                ("users", "avatar_url", "VARCHAR(512) NULL"),
                 ("issues", "resolution_photo_url", "VARCHAR(512) NULL"),
                 ("issues", "resolution_notes", "TEXT NULL"),
                 ("issues", "citizen_rating", "INTEGER NULL"),

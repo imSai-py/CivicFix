@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Shield, LogOut, CheckCircle2, AlertCircle, Award, Trophy, Sparkles, Zap, Flame, Star, CheckCircle, FileText } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import { Shield, LogOut, CheckCircle2, AlertCircle, Award, Trophy, Sparkles, Zap, Flame, Star, CheckCircle, FileText, Camera, RefreshCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { authApi } from '../services/api';
+import { authApi, getAttachmentUrl } from '../services/api';
 
 interface ProfilePageProps {
   onSwitchToLogin: () => void;
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => {
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, logout, isAuthenticated, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<'info' | 'security'>('info');
 
   const [oldPassword, setOldPassword] = useState('');
@@ -16,6 +16,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  // Avatar Photo Upload State
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!isAuthenticated || !user) {
     return (
@@ -32,6 +36,21 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
       </div>
     );
   }
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingAvatar(true);
+    try {
+      await authApi.uploadAvatar(file);
+      await refreshUser();
+    } catch (err: any) {
+      alert(err.response?.data?.error?.message || 'Failed to upload profile picture.');
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,23 +82,66 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
   const rank = user.reputation_rank || 'Civic Watcher';
   const nextTargetXP = xp < 50 ? 50 : xp < 200 ? 200 : 500;
   const xpPercent = Math.min(100, Math.round((xp / nextTargetXP) * 100));
+  const avatarSrc = user.avatar_url ? getAttachmentUrl(user.avatar_url) : null;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 my-6">
-      {/* Profile Header matching Stitch Screen 5 */}
+      {/* Profile Header with Interactive Avatar Upload */}
       <div className="bg-surface-container rounded-3xl p-6 border border-secondary/30 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_0_20px_rgba(0,255,204,0.1)]">
-        <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 rounded-2xl bg-surface-dim border-2 border-primary flex items-center justify-center text-primary text-2xl font-headline font-bold shadow-[0_0_15px_rgba(255,45,120,0.6)]">
-            {user.full_name.charAt(0).toUpperCase()}
+        <div className="flex items-center space-x-5">
+          {/* Avatar Container with Camera Trigger Badge */}
+          <div className="relative group/avatar">
+            {avatarSrc ? (
+              <img
+                src={avatarSrc}
+                alt={user.full_name}
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-secondary shadow-[0_0_20px_rgba(0,255,204,0.4)] group-hover/avatar:scale-105 transition-transform duration-300"
+              />
+            ) : (
+              <div className="w-20 h-20 rounded-2xl bg-surface-dim border-2 border-primary flex items-center justify-center text-primary text-3xl font-headline font-bold shadow-[0_0_20px_rgba(255,45,120,0.6)] group-hover/avatar:scale-105 transition-transform duration-300">
+                {user.full_name.charAt(0).toUpperCase()}
+              </div>
+            )}
+
+            {/* Camera Upload Trigger */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isUploadingAvatar}
+              className="absolute -bottom-1.5 -right-1.5 p-2 rounded-xl bg-primary text-white border border-white/20 shadow-[0_0_12px_rgba(255,45,120,0.8)] hover:scale-110 active:scale-95 transition-all hover:bg-secondary hover:text-slate-950"
+              title="Upload / Change Profile Avatar Photo"
+            >
+              {isUploadingAvatar ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Camera className="w-3.5 h-3.5" />
+              )}
+            </button>
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarFileChange}
+              className="hidden"
+            />
           </div>
+
           <div>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 flex-wrap gap-y-1">
               <h1 className="font-headline font-bold text-2xl text-on-surface">{user.full_name}</h1>
               <span className="font-label text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-secondary/20 text-secondary border border-secondary/40">
                 {user.role}
               </span>
             </div>
             <p className="font-body text-xs text-on-surface-variant mt-0.5">{user.email}</p>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="font-label text-[10px] text-secondary hover:underline uppercase tracking-wider font-bold mt-1 inline-flex items-center gap-1"
+            >
+              <Camera className="w-3 h-3" /> Change Profile Picture
+            </button>
           </div>
         </div>
 
