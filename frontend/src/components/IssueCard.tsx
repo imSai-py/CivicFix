@@ -36,6 +36,15 @@ export const IssueCard: React.FC<IssueCardProps> = ({
   // Lightbox Image Preview Modal State
   const [previewImage, setPreviewImage] = useState<{ url: string; fileName: string } | null>(null);
 
+  React.useEffect(() => {
+    if (issue.citizen_rating) {
+      setUserRating(issue.citizen_rating);
+    }
+    if (issue.citizen_feedback) {
+      setFeedbackText(issue.citizen_feedback);
+    }
+  }, [issue.citizen_rating, issue.citizen_feedback]);
+
   const isReporter = user && user.id === issue.reporter_id;
   const isResolved = issue.status === 'RESOLVED';
   const beforePhoto = issue.attachments && issue.attachments.length > 0 ? getAttachmentUrl(issue.attachments[0].file_path) : null;

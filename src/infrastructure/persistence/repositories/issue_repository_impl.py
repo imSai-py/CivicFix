@@ -88,6 +88,11 @@ class IssueRepositoryImpl(IssueRepositoryInterface):
             existing.assigned_department_id = issue.assigned_department_id
             existing.upvote_count = issue.upvote_count
             existing.resolved_at = issue.resolved_at
+            existing.resolution_photo_url = issue.resolution_photo_url
+            existing.resolution_notes = issue.resolution_notes
+            existing.citizen_rating = issue.citizen_rating
+            existing.citizen_feedback = issue.citizen_feedback
+            existing.reopen_count = issue.reopen_count
             existing.updated_at = issue.updated_at
             target = existing
         else:
