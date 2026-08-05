@@ -26,6 +26,25 @@ class UpdateIssueStatusDTO(BaseModel):
     status: IssueStatus = Field(..., description="Target lifecycle state")
     priority: Optional[IssuePriority] = Field(None, description="Optional updated priority")
     remarks: Optional[str] = Field(None, max_length=1000, description="Official status transition remarks")
+    resolution_photo_url: Optional[str] = Field(None, max_length=512, description="Worker completion photo URL")
+    resolution_notes: Optional[str] = Field(None, max_length=1000, description="Worker resolution notes")
+
+
+class ResolveIssueDTO(BaseModel):
+    """Input payload for marking issue as RESOLVED by worker."""
+    resolution_photo_url: Optional[str] = Field(None, max_length=512, description="Worker completion photo URL")
+    resolution_notes: Optional[str] = Field(None, max_length=1000, description="Worker resolution notes")
+
+
+class RateIssueDTO(BaseModel):
+    """Input payload for citizen feedback rating."""
+    rating: int = Field(..., ge=1, le=5, description="1 to 5 Star Rating")
+    feedback_notes: Optional[str] = Field(None, max_length=1000, description="Optional citizen feedback notes")
+
+
+class ReopenIssueDTO(BaseModel):
+    """Input payload for re-opening a resolved report."""
+    reason: str = Field(..., min_length=5, max_length=1000, description="Reason for re-opening issue")
 
 
 class ApproveReportDTO(BaseModel):
@@ -88,6 +107,11 @@ class IssueResponseDTO(BaseModel):
     created_at: datetime
     updated_at: datetime
     resolved_at: Optional[datetime] = None
+    resolution_photo_url: Optional[str] = None
+    resolution_notes: Optional[str] = None
+    citizen_rating: Optional[int] = None
+    citizen_feedback: Optional[str] = None
+    reopen_count: int = 0
     attachments: List[AttachmentResponseDTO] = []
     distance_km: Optional[float] = None
 

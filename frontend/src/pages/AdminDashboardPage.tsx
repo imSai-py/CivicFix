@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ShieldAlert, RefreshCw, CheckCircle2, Clock, Building2, UserCheck, Image as ImageIcon, MapPin, X } from 'lucide-react';
+import { ShieldAlert, RefreshCw, CheckCircle2, Clock, Building2, UserCheck, Image as ImageIcon, MapPin, X, Camera } from 'lucide-react';
 import { issuesApi, getAttachmentUrl } from '../services/api';
 import { Issue, IssueStatus } from '../types';
 import { StatusBadge } from '../components/StatusBadge';
@@ -15,6 +15,8 @@ export const AdminDashboardPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const [remarks, setRemarks] = useState('');
+  const [resolutionPhotoUrl, setResolutionPhotoUrl] = useState('');
+  const [resolutionNotes, setResolutionNotes] = useState('');
   const [selectedDepartmentId, setSelectedDepartmentId] = useState('');
   const [actionType, setActionType] = useState<'approve' | 'reject' | 'assign' | 'status' | null>(null);
   const [newStatus, setNewStatus] = useState<IssueStatus>('IN_PROGRESS');
@@ -85,8 +87,16 @@ export const AdminDashboardPage: React.FC = () => {
 
   const handleUpdateStatus = async (issue: Issue) => {
     try {
-      await issuesApi.updateStatus(issue.id, newStatus, remarks || `Status updated to ${newStatus}`);
+      await issuesApi.updateStatus(
+        issue.id,
+        newStatus,
+        remarks || `Status updated to ${newStatus}`,
+        newStatus === 'RESOLVED' ? resolutionPhotoUrl : undefined,
+        newStatus === 'RESOLVED' ? resolutionNotes : undefined
+      );
       setRemarks('');
+      setResolutionPhotoUrl('');
+      setResolutionNotes('');
       setActionType(null);
       setSelectedIssue(null);
       fetchQueue();
@@ -291,20 +301,20 @@ export const AdminDashboardPage: React.FC = () => {
       {/* Moderation Confirmation Modal */}
       {selectedIssue && actionType && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-          <div className="glass-panel w-full max-w-md rounded-3xl p-6 border border-slate-700 shadow-2xl">
-            <h3 className="text-lg font-bold text-white mb-2 capitalize">
+          <div className="glass-panel w-full max-w-md rounded-3xl p-6 border border-slate-700 shadow-2xl space-y-4">
+            <h3 className="text-lg font-bold text-white capitalize">
               {actionType === 'approve' && 'Approve Report Submission'}
               {actionType === 'reject' && 'Reject Invalid Report'}
               {actionType === 'assign' && 'Assign Target Department'}
               {actionType === 'status' && 'Update Lifecycle Status'}
             </h3>
-            <p className="text-xs text-slate-400 mb-4">
+            <p className="text-xs text-slate-400">
               Issue Title: <span className="text-white font-semibold">{selectedIssue.title}</span>
             </p>
 
             {/* Department Assignment Dropdown */}
             {actionType === 'assign' && (
-              <div className="mb-4">
+              <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">Target Municipal Department *</label>
                 <select
                   value={selectedDepartmentId}
@@ -323,22 +333,52 @@ export const AdminDashboardPage: React.FC = () => {
 
             {/* Lifecycle Status Dropdown */}
             {actionType === 'status' && (
-              <div className="mb-4">
-                <label className="block text-xs font-semibold text-slate-300 mb-1">Target Status *</label>
-                <select
-                  value={newStatus}
-                  onChange={(e) => setNewStatus(e.target.value as IssueStatus)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"
-                >
-                  <option value="ACKNOWLEDGED">ACKNOWLEDGED (Approved)</option>
-                  <option value="IN_PROGRESS">IN_PROGRESS (Worker On-Site)</option>
-                  <option value="RESOLVED">RESOLVED (Work Completed)</option>
-                  <option value="REJECTED">REJECTED (Invalid Report)</option>
-                </select>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">Target Status *</label>
+                  <select
+                    value={newStatus}
+                    onChange={(e) => setNewStatus(e.target.value as IssueStatus)}
+                    className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white focus:outline-none focus:border-indigo-500"
+                  >
+                    <option value="ACKNOWLEDGED">ACKNOWLEDGED (Approved)</option>
+                    <option value="IN_PROGRESS">IN_PROGRESS (Worker On-Site)</option>
+                    <option value="RESOLVED">RESOLVED (Work Completed)</option>
+                    <option value="REJECTED">REJECTED (Invalid Report)</option>
+                  </select>
+                </div>
+
+                {newStatus === 'RESOLVED' && (
+                  <div className="p-3 bg-emerald-950/40 border border-emerald-500/30 rounded-xl space-y-3">
+                    <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+                      <Camera className="w-3.5 h-3.5" /> Resolution Proof & Completion Notes
+                    </span>
+                    <div>
+                      <label className="block text-[11px] text-slate-300 mb-1">Completion "After" Photo URL</label>
+                      <input
+                        type="url"
+                        placeholder="https://example.com/repaired_pothole.jpg"
+                        value={resolutionPhotoUrl}
+                        onChange={(e) => setResolutionPhotoUrl(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[11px] text-slate-300 mb-1">Worker Completion Notes</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Patching completed by Crew #4 using hot asphalt."
+                        value={resolutionNotes}
+                        onChange={(e) => setResolutionNotes(e.target.value)}
+                        className="w-full bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
-            <div className="mb-4">
+            <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1">
                 {actionType === 'reject' ? 'Rejection Reason (Mandatory) *' : 'Official Remarks (Optional)'}
               </label>

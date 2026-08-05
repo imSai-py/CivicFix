@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, LogOut, CheckCircle2, AlertCircle, Award } from 'lucide-react';
+import { Shield, LogOut, CheckCircle2, AlertCircle, Award, Trophy, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../services/api';
 
@@ -59,6 +59,11 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
     }
   };
 
+  const xp = user.xp_points || 0;
+  const rank = user.reputation_rank || 'Civic Watcher';
+  const nextTargetXP = xp < 50 ? 50 : xp < 200 ? 200 : 500;
+  const xpPercent = Math.min(100, Math.round((xp / nextTargetXP) * 100));
+
   return (
     <div className="max-w-3xl mx-auto space-y-8 my-6">
       {/* Profile Header matching Stitch Screen 5 */}
@@ -85,6 +90,49 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>
         </button>
+      </div>
+
+      {/* CIVIC XP GAMIFICATION BAR */}
+      <div className="neon-card-secondary rounded-3xl p-6 space-y-4 border border-secondary/40 relative overflow-hidden">
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex items-center space-x-3">
+            <div className="p-3 rounded-2xl bg-secondary/20 text-secondary border border-secondary/40 shadow-[0_0_12px_rgba(0,255,204,0.4)]">
+              <Trophy className="w-6 h-6 text-secondary neon-text-secondary animate-pulse" />
+            </div>
+            <div>
+              <span className="font-label text-[10px] uppercase font-bold tracking-widest text-secondary block">
+                Civic Reputation & Rank
+              </span>
+              <h2 className="font-headline font-black text-xl text-on-surface flex items-center space-x-2">
+                <span>{rank}</span>
+                <Sparkles className="w-4 h-4 text-tertiary neon-text-tertiary" />
+              </h2>
+            </div>
+          </div>
+
+          <div className="text-right">
+            <div className="font-headline font-black text-2xl text-secondary neon-text-secondary">
+              {xp} <span className="text-xs text-on-surface-variant font-label">XP</span>
+            </div>
+            <span className="font-label text-[10px] text-on-surface-variant uppercase font-semibold">
+              +50 XP Earned Per Resolved Fix
+            </span>
+          </div>
+        </div>
+
+        {/* Progress Bar to next rank */}
+        <div className="space-y-1.5 pt-2">
+          <div className="flex justify-between text-xs font-label">
+            <span className="text-on-surface-variant">Level Progress</span>
+            <span className="text-secondary font-bold">{xp} / {nextTargetXP} XP</span>
+          </div>
+          <div className="w-full h-3 bg-surface-dim rounded-full overflow-hidden p-0.5 border border-white/10">
+            <div
+              className="h-full bg-gradient-to-r from-secondary via-[#00ffcc] to-tertiary rounded-full transition-all duration-1000 shadow-[0_0_10px_#00ffcc]"
+              style={{ width: `${xpPercent}%` }}
+            ></div>
+          </div>
+        </div>
       </div>
 
       {/* Tab Switcher */}
@@ -126,7 +174,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
             <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold block">Impact Contributions</span>
             <div className="flex items-center space-x-2 text-secondary font-headline font-bold text-sm">
               <Award className="w-4 h-4 text-secondary" />
-              <span>Active Neighborhood Guardian</span>
+              <span>{rank}</span>
             </div>
           </div>
         </div>

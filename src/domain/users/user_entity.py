@@ -27,6 +27,8 @@ class User(BaseEntity):
     role: UserRole = UserRole.CITIZEN
     phone_number: Optional[str] = None
     is_active: bool = True
+    xp_points: int = 0
+    reputation_rank: str = "Civic Watcher"
 
     def deactivate(self) -> None:
         """Deactivates user account."""
@@ -45,3 +47,17 @@ class User(BaseEntity):
         if phone_number is not None:
             self.phone_number = phone_number
         self.mark_updated()
+
+    def add_xp(self, points: int) -> int:
+        """Awards XP points and updates civic rank."""
+        self.xp_points += points
+        if self.xp_points >= 500:
+            self.reputation_rank = "Infrastructure Hero"
+        elif self.xp_points >= 200:
+            self.reputation_rank = "Community Guardian"
+        elif self.xp_points >= 50:
+            self.reputation_rank = "Active Citizen"
+        else:
+            self.reputation_rank = "Civic Watcher"
+        self.mark_updated()
+        return self.xp_points

@@ -19,6 +19,7 @@ from src.application.issues.dtos import (
     UpdateIssueStatusDTO
 )
 from src.domain.common.exceptions import (
+    DomainException,
     EntityAlreadyExistsError,
     EntityNotFoundError,
     UnauthorizedAccessError
@@ -99,6 +100,11 @@ class CreateIssueUseCase:
             created_at=issue.created_at,
             updated_at=issue.updated_at,
             resolved_at=issue.resolved_at,
+            resolution_photo_url=issue.resolution_photo_url,
+            resolution_notes=issue.resolution_notes,
+            citizen_rating=issue.citizen_rating,
+            citizen_feedback=issue.citizen_feedback,
+            reopen_count=issue.reopen_count,
             attachments=[
                 AttachmentResponseDTO(
                     id=att.id,
@@ -233,6 +239,18 @@ class UpdateIssueStatusUseCase:
                 raise EntityNotFoundError("Issue", str(issue_id))
 
             prev_status = issue.status.value
+            if dto.status == IssueStatus.RESOLVED:
+                if dto.resolution_photo_url:
+                    issue.resolution_photo_url = dto.resolution_photo_url
+                if dto.resolution_notes:
+                    issue.resolution_notes = dto.resolution_notes
+
+                # Award +50 XP to original reporter
+                reporter = await self.uow.users.get_by_id(issue.reporter_id)
+                if reporter:
+                    reporter.add_xp(50)
+                    await self.uow.users.save(reporter)
+
             issue.transition_status(dto.status, dto.priority)
             saved = await self.uow.issues.save(issue)
 
@@ -242,7 +260,7 @@ class UpdateIssueStatusUseCase:
                 action=AuditAction.STATUS_CHANGED,
                 previous_state=prev_status,
                 new_state=saved.status.value,
-                remarks=dto.remarks
+                remarks=dto.remarks or dto.resolution_notes
             )
             await self.uow.issues.save_audit_log(audit)
 
@@ -458,3 +476,73 @@ class ListCategoriesUseCase:
                     default_sla_hours=cat.default_sla_hours
                 ) for cat in categories
             ]
+
+
+class RateIssueUseCase:
+    """Use case for citizen rating & feedback on resolved issue."""
+    def __init__(self, uow: AbstractUnitOfWork):
+        self.uow = uow
+
+    async def execute(
+        self,
+        issue_id: uuid.UUID,
+        rating: int,
+        feedback_notes: Optional[str],
+        user_id: uuid.UUID
+    ) -> IssueResponseDTO:
+        async with self.uow:
+            issue = await self.uow.issues.get_by_id(issue_id)
+            if not issue:
+                raise EntityNotFoundError("Issue", str(issue_id))
+
+            if issue.reporter_id != user_id:
+                raise UnauthorizedAccessError("Only the original reporter can rate the resolution.")
+
+            if issue.status != IssueStatus.RESOLVED:
+                raise DomainException("Only resolved issues can be rated.")
+
+            issue.citizen_rating = rating
+            issue.citizen_feedback = feedback_notes
+            saved = await self.uow.issues.save(issue)
+            await self.uow.commit()
+            return CreateIssueUseCase._map_to_dto(saved)
+
+
+class ReopenIssueUseCase:
+    """Use case for re-opening a resolved issue within 48h."""
+    def __init__(self, uow: AbstractUnitOfWork):
+        self.uow = uow
+
+    async def execute(
+        self,
+        issue_id: uuid.UUID,
+        reason: str,
+        user_id: uuid.UUID
+    ) -> IssueResponseDTO:
+        async with self.uow:
+            issue = await self.uow.issues.get_by_id(issue_id)
+            if not issue:
+                raise EntityNotFoundError("Issue", str(issue_id))
+
+            if issue.reporter_id != user_id:
+                raise UnauthorizedAccessError("Only the original reporter can re-open this report.")
+
+            if issue.status != IssueStatus.RESOLVED:
+                raise DomainException("Only resolved issues can be re-opened.")
+
+            prev_status = issue.status.value
+            issue.transition_status(IssueStatus.IN_PROGRESS, allow_reopen=True)
+            saved = await self.uow.issues.save(issue)
+
+            audit = IssueAuditLog(
+                issue_id=saved.id,
+                actor_id=user_id,
+                action=AuditAction.STATUS_CHANGED,
+                previous_state=prev_status,
+                new_state=saved.status.value,
+                remarks=f"Re-opened by citizen: {reason}"
+            )
+            await self.uow.issues.save_audit_log(audit)
+
+            await self.uow.commit()
+            return CreateIssueUseCase._map_to_dto(saved)

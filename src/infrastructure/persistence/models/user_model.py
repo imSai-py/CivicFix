@@ -1,5 +1,5 @@
 from typing import Optional
-from sqlalchemy import Boolean, Enum as SQLEnum, String
+from sqlalchemy import Boolean, Enum as SQLEnum, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 from src.domain.users.user_entity import User, UserRole
 from src.domain.common.value_objects import EmailAddress
@@ -23,6 +23,8 @@ class UserModel(BaseModel):
     )
     phone_number: Mapped[Optional[str]] = mapped_column(String(30), nullable=True)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True, nullable=False)
+    xp_points: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    reputation_rank: Mapped[str] = mapped_column(String(100), default="Civic Watcher", nullable=False)
 
     def to_domain(self) -> User:
         """Converts ORM model to pure Domain entity."""
@@ -34,6 +36,8 @@ class UserModel(BaseModel):
             role=self.role,
             phone_number=self.phone_number,
             is_active=self.is_active,
+            xp_points=self.xp_points,
+            reputation_rank=self.reputation_rank,
             created_at=self.created_at,
             updated_at=self.updated_at
         )
@@ -49,6 +53,8 @@ class UserModel(BaseModel):
             role=domain.role,
             phone_number=domain.phone_number,
             is_active=domain.is_active,
+            xp_points=domain.xp_points,
+            reputation_rank=domain.reputation_rank,
             created_at=domain.created_at,
             updated_at=domain.updated_at
         )

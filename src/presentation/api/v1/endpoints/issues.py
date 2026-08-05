@@ -11,7 +11,9 @@ from src.application.issues.dtos import (
     GeoJSONFeatureCollectionDTO,
     IssueResponseDTO,
     PaginatedIssuesDTO,
+    RateIssueDTO,
     RejectReportDTO,
+    ReopenIssueDTO,
     UpdateIssueStatusDTO
 )
 from src.application.issues.use_cases import (
@@ -21,7 +23,9 @@ from src.application.issues.use_cases import (
     GetIssueAuditLogsUseCase,
     GetNearbyIssuesGeoJSONUseCase,
     ListIssuesUseCase,
+    RateIssueUseCase,
     RejectIssueUseCase,
+    ReopenIssueUseCase,
     UpdateIssueStatusUseCase,
     UploadAttachmentUseCase,
     UpvoteIssueUseCase
@@ -194,3 +198,29 @@ async def upload_attachment(
         file_name=file_name,
         mime_type=mime_type
     )
+
+
+@router.post("/{issue_id}/rate", response_model=IssueResponseDTO, status_code=status.HTTP_200_OK)
+async def rate_issue_resolution(
+    issue_id: uuid.UUID,
+    dto: RateIssueDTO,
+    claims: dict = Depends(get_current_user_claims),
+    uow: AbstractUnitOfWork = Depends(get_uow)
+):
+    """Allows original reporter to rate a resolved issue (1-5 stars + feedback)."""
+    user_id = uuid.UUID(claims["sub"])
+    use_case = RateIssueUseCase(uow=uow)
+    return await use_case.execute(issue_id=issue_id, rating=dto.rating, feedback_notes=dto.feedback_notes, user_id=user_id)
+
+
+@router.post("/{issue_id}/reopen", response_model=IssueResponseDTO, status_code=status.HTTP_200_OK)
+async def reopen_issue(
+    issue_id: uuid.UUID,
+    dto: ReopenIssueDTO,
+    claims: dict = Depends(get_current_user_claims),
+    uow: AbstractUnitOfWork = Depends(get_uow)
+):
+    """Allows original reporter to re-open a resolved issue if repair is incomplete."""
+    user_id = uuid.UUID(claims["sub"])
+    use_case = ReopenIssueUseCase(uow=uow)
+    return await use_case.execute(issue_id=issue_id, reason=dto.reason, user_id=user_id)

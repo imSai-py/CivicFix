@@ -54,4 +54,6 @@ class UserResponseDTO(BaseModel):
     role: UserRole
     phone_number: Optional[str] = None
     is_active: bool
+    xp_points: int = 0
+    reputation_rank: str = "Civic Watcher"
     created_at: datetime

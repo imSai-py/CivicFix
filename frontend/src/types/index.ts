@@ -11,6 +11,8 @@ export interface User {
   role: UserRole;
   phone_number?: string;
   is_active: boolean;
+  xp_points?: number;
+  reputation_rank?: string;
   created_at: string;
 }
 
@@ -44,6 +46,11 @@ export interface Issue {
   created_at: string;
   updated_at: string;
   resolved_at?: string;
+  resolution_photo_url?: string;
+  resolution_notes?: string;
+  citizen_rating?: number;
+  citizen_feedback?: string;
+  reopen_count?: number;
   attachments: Attachment[];
 }
 

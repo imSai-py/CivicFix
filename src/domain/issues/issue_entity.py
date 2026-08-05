@@ -120,17 +120,30 @@ class Issue(BaseEntity):
     priority: IssuePriority = IssuePriority.MEDIUM
     upvote_count: int = 0
     resolved_at: Optional[datetime] = None
+    resolution_photo_url: Optional[str] = None
+    resolution_notes: Optional[str] = None
+    citizen_rating: Optional[int] = None
+    citizen_feedback: Optional[str] = None
+    reopen_count: int = 0
     attachments: List[Attachment] = field(default_factory=list)
 
-    def transition_status(self, new_status: IssueStatus, priority: Optional[IssuePriority] = None) -> None:
+    def transition_status(
+        self,
+        new_status: IssueStatus,
+        priority: Optional[IssuePriority] = None,
+        allow_reopen: bool = False
+    ) -> None:
         """State Machine Transition Rules."""
-        if self.status in [IssueStatus.RESOLVED, IssueStatus.REJECTED]:
+        if self.status in [IssueStatus.RESOLVED, IssueStatus.REJECTED] and not allow_reopen:
             raise DomainException(f"Cannot transition issue from terminal state '{self.status.value}'.")
 
         if new_status == IssueStatus.RESOLVED:
             self.resolved_at = utc_now()
         elif new_status != IssueStatus.RESOLVED and self.resolved_at:
             self.resolved_at = None
+
+        if allow_reopen and new_status == IssueStatus.IN_PROGRESS:
+            self.reopen_count += 1
 
         self.status = new_status
         if priority:

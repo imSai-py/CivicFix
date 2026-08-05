@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { MapPin, ThumbsUp, Eye, X, Image as ImageIcon, Calendar } from 'lucide-react';
+import { MapPin, ThumbsUp, Eye, X, Image as ImageIcon, Calendar, Star, RefreshCw, CheckCircle2, AlertCircle } from 'lucide-react';
 import { Issue } from '../types';
 import { StatusBadge } from './StatusBadge';
 import { issuesApi, getAttachmentUrl } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 interface IssueCardProps {
   issue: Issue;
@@ -15,12 +16,28 @@ export const IssueCard: React.FC<IssueCardProps> = ({
   isAuthenticated,
   onRefresh,
 }) => {
+  const { user } = useAuth();
   const [upvotes, setUpvotes] = useState(issue.upvote_count);
   const [isUpvoting, setIsUpvoting] = useState(false);
   const [isUpvoted, setIsUpvoted] = useState(false);
 
+  // Rating & Reopen Modal States
+  const [userRating, setUserRating] = useState<number>(issue.citizen_rating || 0);
+  const [feedbackText, setFeedbackText] = useState<string>(issue.citizen_feedback || '');
+  const [isSubmittingRating, setIsSubmittingRating] = useState(false);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+
+  const [showReopenModal, setShowReopenModal] = useState(false);
+  const [reopenReason, setReopenReason] = useState('');
+  const [isReopening, setIsReopening] = useState(false);
+
   // Lightbox Image Preview Modal State
   const [previewImage, setPreviewImage] = useState<{ url: string; fileName: string } | null>(null);
+
+  const isReporter = user && user.id === issue.reporter_id;
+  const isResolved = issue.status === 'RESOLVED';
+  const beforePhoto = issue.attachments && issue.attachments.length > 0 ? getAttachmentUrl(issue.attachments[0].file_path) : null;
+  const afterPhoto = issue.resolution_photo_url ? getAttachmentUrl(issue.resolution_photo_url) : null;
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -36,6 +53,34 @@ export const IssueCard: React.FC<IssueCardProps> = ({
       console.error('Failed to upvote:', err);
     } finally {
       setIsUpvoting(false);
+    }
+  };
+
+  const handleRateSubmit = async () => {
+    if (!userRating) return;
+    setIsSubmittingRating(true);
+    try {
+      await issuesApi.rate(issue.id, userRating, feedbackText);
+      setShowRatingModal(false);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error('Failed to submit rating:', err);
+    } finally {
+      setIsSubmittingRating(false);
+    }
+  };
+
+  const handleReopenSubmit = async () => {
+    if (!reopenReason.trim()) return;
+    setIsReopening(true);
+    try {
+      await issuesApi.reopen(issue.id, reopenReason);
+      setShowReopenModal(false);
+      if (onRefresh) onRefresh();
+    } catch (err) {
+      console.error('Failed to re-open issue:', err);
+    } finally {
+      setIsReopening(false);
     }
   };
 
@@ -69,8 +114,52 @@ export const IssueCard: React.FC<IssueCardProps> = ({
             {issue.description}
           </p>
 
-          {/* Inline Photo Preview thumbnails */}
-          {issue.attachments && issue.attachments.length > 0 && (
+          {/* BEFORE / AFTER PHOTO AUDIT COMPARISON (for Resolved Issues) */}
+          {isResolved && (beforePhoto || afterPhoto) && (
+            <div className="mt-4 p-3.5 rounded-xl bg-surface-container-high/80 border border-secondary/30 space-y-2">
+              <div className="flex items-center justify-between text-[11px] font-label font-bold text-secondary">
+                <span className="flex items-center gap-1">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-secondary" /> Resolution Audit Proof
+                </span>
+                <span className="text-[10px] text-on-surface-variant uppercase font-semibold">Side-by-Side</span>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2">
+                {/* Before Photo */}
+                <div className="relative rounded-lg overflow-hidden border border-white/10 bg-surface-dim h-24">
+                  {beforePhoto ? (
+                    <img src={beforePhoto} alt="Before Fix" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[10px] text-on-surface-variant">No Photo</div>
+                  )}
+                  <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-black/70 font-label text-[9px] uppercase font-bold text-amber-400">
+                    Before
+                  </div>
+                </div>
+
+                {/* After Photo */}
+                <div className="relative rounded-lg overflow-hidden border border-secondary/40 bg-surface-dim h-24">
+                  {afterPhoto ? (
+                    <img src={afterPhoto} alt="After Fix" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-[10px] text-emerald-400 font-bold">Verified Repair</div>
+                  )}
+                  <div className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded bg-emerald-950/80 border border-emerald-500/40 font-label text-[9px] uppercase font-bold text-emerald-300">
+                    After (Fixed)
+                  </div>
+                </div>
+              </div>
+
+              {issue.resolution_notes && (
+                <p className="font-body text-[11px] text-on-surface-variant italic pt-1 border-t border-white/5">
+                  <span className="text-secondary font-semibold not-italic">Crew Notes:</span> {issue.resolution_notes}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Standard Media Photo Thumbnails if not resolved */}
+          {!isResolved && issue.attachments && issue.attachments.length > 0 && (
             <div className="mt-3.5 space-y-2">
               <div className="flex items-center justify-between text-[11px] font-label text-on-surface-variant">
                 <span className="flex items-center gap-1 font-semibold text-secondary">
@@ -106,6 +195,38 @@ export const IssueCard: React.FC<IssueCardProps> = ({
               </div>
             </div>
           )}
+
+          {/* CITIZEN RATING & RE-OPEN CONTROLS (for Resolved Issues) */}
+          {isResolved && isReporter && (
+            <div className="mt-4 pt-3 border-t border-secondary/30 flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    onClick={() => {
+                      setUserRating(star);
+                      setShowRatingModal(true);
+                    }}
+                    className={`w-4 h-4 cursor-pointer transition-all ${
+                      (issue.citizen_rating || userRating) >= star
+                        ? 'fill-tertiary text-tertiary drop-shadow-[0_0_6px_rgba(255,224,74,0.8)]'
+                        : 'text-outline hover:text-tertiary'
+                    }`}
+                  />
+                ))}
+                <span className="font-label text-[11px] font-bold text-tertiary ml-1">
+                  {issue.citizen_rating ? `${issue.citizen_rating}★ Rated` : 'Rate Fix'}
+                </span>
+              </div>
+
+              <button
+                onClick={() => setShowReopenModal(true)}
+                className="font-label text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-lg border border-amber-500/40 text-amber-400 hover:bg-amber-500/10 font-bold transition-all flex items-center gap-1"
+              >
+                <RefreshCw className="w-3 h-3" /> Re-open Fix
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Location & Upvote Action Footer */}
@@ -134,6 +255,92 @@ export const IssueCard: React.FC<IssueCardProps> = ({
           </button>
         </div>
       </div>
+
+      {/* RATING MODAL */}
+      {showRatingModal && (
+        <div className="fixed inset-0 z-50 bg-background/90 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="bg-surface-container rounded-3xl border border-tertiary/50 p-6 max-w-md w-full space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center border-b border-outline/20 pb-3">
+              <h3 className="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
+                <Star className="w-5 h-5 text-tertiary fill-tertiary" /> Rate Repair Quality
+              </h3>
+              <button onClick={() => setShowRatingModal(false)} className="text-on-surface-variant hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex justify-center space-x-2 py-2">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <Star
+                    key={star}
+                    onClick={() => setUserRating(star)}
+                    className={`w-8 h-8 cursor-pointer transition-all ${
+                      userRating >= star
+                        ? 'fill-tertiary text-tertiary scale-110 drop-shadow-[0_0_10px_rgba(255,224,74,0.9)]'
+                        : 'text-outline hover:text-tertiary'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <textarea
+                placeholder="Optional feedback notes for the municipal crew..."
+                value={feedbackText}
+                onChange={(e) => setFeedbackText(e.target.value)}
+                className="w-full bg-surface-dim border border-outline/30 rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:border-tertiary"
+                rows={3}
+              />
+
+              <button
+                onClick={handleRateSubmit}
+                disabled={isSubmittingRating || !userRating}
+                className="w-full py-3 rounded-xl bg-tertiary text-background font-headline font-bold text-sm uppercase tracking-wider hover:opacity-90 transition-all shadow-[0_0_15px_rgba(255,224,74,0.5)] disabled:opacity-50"
+              >
+                {isSubmittingRating ? 'Submitting Rating...' : 'Submit Citizen Rating (+50 XP Earned)'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* RE-OPEN MODAL */}
+      {showReopenModal && (
+        <div className="fixed inset-0 z-50 bg-background/90 backdrop-blur-xl flex items-center justify-center p-4">
+          <div className="bg-surface-container rounded-3xl border border-amber-500/50 p-6 max-w-md w-full space-y-4 shadow-2xl">
+            <div className="flex justify-between items-center border-b border-outline/20 pb-3">
+              <h3 className="font-headline font-bold text-lg text-amber-400 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-amber-400" /> Re-Open Issue Report
+              </h3>
+              <button onClick={() => setShowReopenModal(false)} className="text-on-surface-variant hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <p className="font-body text-xs text-on-surface-variant">
+                If the municipal crew's repair is incomplete or ineffective, enter a reason to send this report back to active repair status.
+              </p>
+
+              <textarea
+                placeholder="Describe why the repair is incomplete..."
+                value={reopenReason}
+                onChange={(e) => setReopenReason(e.target.value)}
+                className="w-full bg-surface-dim border border-outline/30 rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:border-amber-500"
+                rows={3}
+              />
+
+              <button
+                onClick={handleReopenSubmit}
+                disabled={isReopening || !reopenReason.trim()}
+                className="w-full py-3 rounded-xl bg-amber-500 text-background font-headline font-bold text-sm uppercase tracking-wider hover:opacity-90 transition-all shadow-[0_0_15px_rgba(245,158,11,0.5)] disabled:opacity-50"
+              >
+                {isReopening ? 'Re-opening Issue...' : 'Confirm Re-Open Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Lightbox Image Preview Modal matching Stitch UI */}
       {previewImage && (

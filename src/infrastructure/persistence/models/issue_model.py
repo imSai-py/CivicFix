@@ -253,6 +253,12 @@ class IssueModel(BaseModel):
     upvote_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     resolved_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
+    resolution_photo_url: Mapped[Optional[str]] = mapped_column(String(512), nullable=True)
+    resolution_notes: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    citizen_rating: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
+    citizen_feedback: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    reopen_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+
     attachments: Mapped[List[AttachmentModel]] = relationship(
         "AttachmentModel",
         cascade="all, delete-orphan",
@@ -283,6 +289,11 @@ class IssueModel(BaseModel):
             created_at=self.created_at,
             updated_at=self.updated_at,
             resolved_at=self.resolved_at,
+            resolution_photo_url=self.resolution_photo_url,
+            resolution_notes=self.resolution_notes,
+            citizen_rating=self.citizen_rating,
+            citizen_feedback=self.citizen_feedback,
+            reopen_count=self.reopen_count,
             attachments=att_list
         )
 
@@ -303,5 +314,10 @@ class IssueModel(BaseModel):
             upvote_count=domain.upvote_count,
             created_at=domain.created_at,
             updated_at=domain.updated_at,
-            resolved_at=domain.resolved_at
+            resolved_at=domain.resolved_at,
+            resolution_photo_url=domain.resolution_photo_url,
+            resolution_notes=domain.resolution_notes,
+            citizen_rating=domain.citizen_rating,
+            citizen_feedback=domain.citizen_feedback,
+            reopen_count=domain.reopen_count
         )

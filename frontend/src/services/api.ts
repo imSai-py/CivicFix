@@ -35,7 +35,7 @@ export const setAuthTokens = (tokens: AuthTokens | null) => {
   }
 };
 
-export const getAttachmentUrl = (filePath: string): string => {
+export const getAttachmentUrl = (filePath?: string): string => {
   if (!filePath) return '';
   if (filePath.startsWith('http://') || filePath.startsWith('https://')) {
     return filePath;
@@ -100,8 +100,23 @@ export const issuesApi = {
     apiClient.post<Issue>(`/issues/${issueId}/reject`, { remarks }),
   assign: (issueId: string, departmentId: string, remarks?: string) =>
     apiClient.post<Issue>(`/issues/${issueId}/assign`, { department_id: departmentId, remarks }),
-  updateStatus: (issueId: string, status: IssueStatus, remarks?: string) =>
-    apiClient.patch<Issue>(`/issues/${issueId}/status`, { status, remarks }),
+  updateStatus: (
+    issueId: string,
+    status: IssueStatus,
+    remarks?: string,
+    resolution_photo_url?: string,
+    resolution_notes?: string
+  ) =>
+    apiClient.patch<Issue>(`/issues/${issueId}/status`, {
+      status,
+      remarks,
+      resolution_photo_url,
+      resolution_notes,
+    }),
+  rate: (issueId: string, rating: number, feedbackNotes?: string) =>
+    apiClient.post<Issue>(`/issues/${issueId}/rate`, { rating, feedback_notes: feedbackNotes }),
+  reopen: (issueId: string, reason: string) =>
+    apiClient.post<Issue>(`/issues/${issueId}/reopen`, { reason }),
   uploadAttachment: (issueId: string, file: File) => {
     const formData = new FormData();
     formData.append('file', file);

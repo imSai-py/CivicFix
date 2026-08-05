@@ -64,6 +64,8 @@ class RegisterUserUseCase:
                 role=saved_user.role,
                 phone_number=saved_user.phone_number,
                 is_active=saved_user.is_active,
+                xp_points=saved_user.xp_points,
+                reputation_rank=saved_user.reputation_rank,
                 created_at=saved_user.created_at
             )
 
@@ -175,6 +177,8 @@ class GetCurrentUserUseCase:
                 role=user.role,
                 phone_number=user.phone_number,
                 is_active=user.is_active,
+                xp_points=user.xp_points,
+                reputation_rank=user.reputation_rank,
                 created_at=user.created_at
             )
 
@@ -207,6 +211,8 @@ class UpdateUserProfileUseCase:
                 role=saved_user.role,
                 phone_number=saved_user.phone_number,
                 is_active=saved_user.is_active,
+                xp_points=saved_user.xp_points,
+                reputation_rank=saved_user.reputation_rank,
                 created_at=saved_user.created_at
             )
 
