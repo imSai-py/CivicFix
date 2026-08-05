@@ -99,7 +99,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         {/* Giant Hero Title */}
         <h1 className="font-headline font-black text-4xl sm:text-6xl lg:text-7xl text-on-surface tracking-tight leading-[1.1]">
           Transform Your City <br className="hidden sm:block" />
-          In <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary via-secondary to-tertiary drop-shadow-[0_0_20px_rgba(0,255,204,0.4)]">Real-Time.</span>
+          In <span className="text-secondary neon-text-secondary font-black inline-block">Real-Time.</span>
         </h1>
 
         {/* Subtitle */}
