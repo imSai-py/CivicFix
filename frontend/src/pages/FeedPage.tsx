@@ -108,11 +108,12 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
   return (
     <div className="space-y-10">
       {/* 1. Greeting Header matching Stitch Screen 2 */}
-      <section className="space-y-2">
-        <h2 className="font-headline font-bold text-3xl md:text-4xl text-on-surface">
-          Good evening, <span className="text-secondary neon-text-secondary">{firstName}</span>.
+      <section className="relative space-y-2">
+        <div className="absolute -left-12 -top-12 w-64 h-64 bg-secondary/10 rounded-full blur-3xl pointer-events-none"></div>
+        <h2 className="font-headline font-bold text-3xl md:text-5xl text-on-surface tracking-tight">
+          Good evening, <span className="text-secondary neon-text-secondary font-black">{firstName}</span>.
         </h2>
-        <p className="font-label text-xs text-on-surface-variant uppercase tracking-widest opacity-80">
+        <p className="font-label text-xs text-on-surface-variant uppercase tracking-widest opacity-90 font-semibold">
           Municipal Operations Sector • Live Platform Stream
         </p>
       </section>
@@ -120,50 +121,51 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       {/* 2. Quick Stats Bento Grid matching Stitch Screen 2 */}
       <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {/* Stat 1: Reported */}
-        <div className="bg-surface-container rounded-xl p-5 neon-border-secondary flex flex-col justify-between h-36 group hover:bg-surface-container-high transition-colors duration-300 relative overflow-hidden">
-          <div className="absolute -right-4 -top-4 w-16 h-16 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/20 transition-all"></div>
+        <div className="neon-card-secondary rounded-2xl p-5 flex flex-col justify-between h-36 group transition-all duration-300 relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-secondary/20 rounded-full blur-2xl group-hover:bg-secondary/30 transition-all"></div>
           <div className="flex items-center space-x-2 text-secondary">
-            <Layers className="w-5 h-5 text-secondary" />
+            <Layers className="w-5 h-5 text-secondary drop-shadow-[0_0_8px_rgba(0,255,204,0.8)]" />
             <span className="font-label text-xs uppercase tracking-wider font-bold">Reported</span>
           </div>
-          <div className="font-headline font-bold text-4xl mt-2 text-on-surface">
+          <div className="font-headline font-black text-4xl mt-2 text-on-surface">
             {totalIssuesCount}
           </div>
         </div>
 
         {/* Stat 2: Resolved */}
-        <div className="bg-surface-container rounded-xl p-5 border border-surface-variant flex flex-col justify-between h-36 group hover:bg-surface-container-high transition-colors duration-300">
+        <div className="neon-card rounded-2xl p-5 border border-tertiary/40 flex flex-col justify-between h-36 group hover:border-tertiary/70 transition-all duration-300 relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-tertiary/15 rounded-full blur-2xl group-hover:bg-tertiary/25 transition-all"></div>
           <div className="flex items-center space-x-2 text-tertiary">
-            <CheckCircle2 className="w-5 h-5 text-tertiary" />
+            <CheckCircle2 className="w-5 h-5 text-tertiary drop-shadow-[0_0_8px_rgba(255,224,74,0.8)]" />
             <span className="font-label text-xs uppercase tracking-wider font-bold">Resolved</span>
           </div>
-          <div className="font-headline font-bold text-4xl mt-2 text-on-surface">
+          <div className="font-headline font-black text-4xl mt-2 text-on-surface">
             {resolvedCount}
           </div>
         </div>
 
         {/* Stat 3: Grid Status (Spans 2 columns) */}
-        <div className="col-span-2 bg-surface-container rounded-xl p-5 border border-primary/20 shadow-[inset_0_0_20px_rgba(255,45,120,0.05)] flex items-center justify-between relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="col-span-2 neon-card-primary rounded-2xl p-5 flex items-center justify-between relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           <div>
             <h3 className="font-label text-xs uppercase tracking-wider text-primary mb-1 font-bold">City Grid Status</h3>
-            <p className="font-headline font-semibold text-xl text-on-surface">Stable • {inProgressCount} Active Fixes</p>
+            <p className="font-headline font-bold text-xl text-on-surface">Stable • {inProgressCount} Active Fixes</p>
           </div>
-          <div className="w-12 h-12 rounded-full border-2 border-primary/30 flex items-center justify-center neon-text-primary">
-            <Zap className="w-6 h-6 text-primary" />
+          <div className="w-14 h-14 rounded-full border-2 border-primary/50 bg-primary/10 flex items-center justify-center neon-text-primary shadow-[0_0_15px_rgba(255,45,120,0.5)]">
+            <Zap className="w-7 h-7 text-primary animate-pulse" />
           </div>
         </div>
       </section>
 
-      {/* 3. Main Action CTA Button matching Stitch Screen 2 */}
+      {/* 3. Main Action CTA Button - Hot Pink Neon Pill */}
       <section>
         <button
           onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
-          className="w-full bg-surface-container-high border-2 border-primary/50 text-on-surface rounded-full py-4 px-6 flex items-center justify-center space-x-3 neon-btn-glow transition-all duration-300 hover:border-primary active:scale-95 group relative overflow-hidden"
+          className="w-full bg-gradient-to-r from-[#ff2d78] via-[#e0005a] to-[#ff2d78] text-white rounded-full py-4.5 px-8 flex items-center justify-center space-x-3 shadow-[0_0_30px_rgba(255,45,120,0.6)] hover:shadow-[0_0_45px_rgba(255,45,120,0.9)] hover:scale-[1.01] active:scale-95 transition-all duration-300 font-headline font-black text-lg tracking-wide group"
         >
-          <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-          <FilePlus className="w-6 h-6 text-primary group-hover:scale-110 transition-transform duration-300" />
-          <span className="font-headline font-bold text-lg tracking-wide relative z-10 group-hover:neon-text-primary">Report an Issue Now</span>
+          <FilePlus className="w-6 h-6 text-white group-hover:scale-110 transition-transform duration-300" />
+          <span>Report an Issue Now</span>
+          <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
         </button>
       </section>
 
@@ -171,7 +173,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="font-headline font-bold text-xl text-on-surface flex items-center">
-            <Radio className="w-5 h-5 text-secondary mr-2" />
+            <Radio className="w-5 h-5 text-secondary mr-2 drop-shadow-[0_0_8px_rgba(0,255,204,0.8)]" />
             <span>Happening Nearby</span>
           </h3>
           <button
@@ -183,42 +185,42 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         </div>
 
         <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar">
-          {issues.slice(0, 5).map((issue) => {
+          {issues.slice(0, 6).map((issue) => {
             const hasPhoto = issue.attachments && issue.attachments.length > 0;
             return (
               <div
                 key={issue.id}
                 onClick={() => navigateTo('activity')}
-                className="min-w-[280px] max-w-[300px] snap-center bg-surface-container-high/60 backdrop-blur-md rounded-xl border border-surface-variant p-4 flex flex-col justify-between gap-3 group hover:border-secondary/50 transition-colors cursor-pointer"
+                className="min-w-[280px] max-w-[300px] snap-center neon-card rounded-2xl border border-white/10 hover:border-secondary/60 p-4 flex flex-col justify-between gap-3 group transition-all duration-300 cursor-pointer shadow-lg hover:shadow-[0_0_20px_rgba(0,255,204,0.2)]"
               >
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <span className={`font-label text-[10px] uppercase px-2 py-0.5 rounded tracking-wider font-bold ${
-                      issue.status === 'RESOLVED' ? 'bg-emerald-500/20 text-emerald-300' :
-                      issue.status === 'IN_PROGRESS' ? 'bg-tertiary/20 text-tertiary' : 'bg-secondary/20 text-secondary'
+                    <span className={`font-label text-[10px] uppercase px-2.5 py-0.5 rounded-full tracking-wider font-bold shadow-sm ${
+                      issue.status === 'RESOLVED' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' :
+                      issue.status === 'IN_PROGRESS' ? 'bg-tertiary/20 text-tertiary border border-tertiary/40' : 'bg-secondary/20 text-secondary border border-secondary/40'
                     }`}>
                       {issue.status}
                     </span>
-                    <span className="text-on-surface-variant text-[11px]">
+                    <span className="text-on-surface-variant text-[11px] font-mono">
                       {new Date(issue.created_at).toLocaleDateString()}
                     </span>
                   </div>
 
                   {hasPhoto && (
-                    <div className="w-full h-32 rounded-lg bg-surface-dim overflow-hidden relative border border-white/5 mb-2">
+                    <div className="w-full h-32 rounded-xl bg-surface-dim overflow-hidden relative border border-white/10 mb-2">
                       <img
                         src={getAttachmentUrl(issue.attachments[0].file_path)}
                         alt={issue.title}
-                        className="object-cover w-full h-full opacity-80 group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover w-full h-full opacity-85 group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                   )}
 
-                  <h4 className="font-headline font-semibold text-sm mb-1 text-on-surface truncate">{issue.title}</h4>
+                  <h4 className="font-headline font-bold text-sm mb-1 text-on-surface group-hover:text-secondary transition-colors truncate">{issue.title}</h4>
                   <p className="font-body text-xs text-on-surface-variant line-clamp-2">{issue.description}</p>
                 </div>
 
-                <div className="flex items-center text-xs text-on-surface-variant font-body pt-2 border-t border-slate-800">
+                <div className="flex items-center text-xs text-on-surface-variant font-body pt-2 border-t border-white/10">
                   <MapPin className="w-3.5 h-3.5 text-secondary mr-1 shrink-0" />
                   <span className="truncate">{issue.location.address || `${issue.location.latitude.toFixed(3)}, ${issue.location.longitude.toFixed(3)}`}</span>
                 </div>
@@ -228,9 +230,9 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
 
           <div
             onClick={() => navigateTo('map')}
-            className="min-w-[200px] snap-center bg-surface-container-high/60 backdrop-blur-md rounded-xl border border-surface-variant p-4 flex flex-col items-center justify-center group hover:border-secondary/50 transition-colors cursor-pointer"
+            className="min-w-[200px] snap-center neon-card rounded-2xl border border-white/10 hover:border-secondary/60 p-4 flex flex-col items-center justify-center group transition-all duration-300 cursor-pointer shadow-lg"
           >
-            <div className="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center mb-2 group-hover:bg-secondary/20 group-hover:text-secondary transition-colors text-on-surface-variant">
+            <div className="w-12 h-12 rounded-full bg-secondary/10 border border-secondary/30 flex items-center justify-center mb-2 group-hover:bg-secondary/20 group-hover:text-secondary transition-colors text-secondary">
               <ArrowRight className="w-6 h-6" />
             </div>
             <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors font-bold">View All on Map</span>
@@ -239,14 +241,14 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       </section>
 
       {/* 5. Clickable Category Quick-Filter Strip */}
-      <section className="bg-surface-container p-5 rounded-2xl border border-secondary/30 space-y-3">
+      <section className="neon-card p-5 rounded-2xl border border-secondary/30 space-y-3 shadow-xl">
         <span className="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider block">Browse Issues By Category</span>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedCategory('')}
             className={`font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl font-bold transition-all ${
               selectedCategory === ''
-                ? 'bg-secondary text-background shadow-[0_0_12px_#00ffcc]'
+                ? 'bg-secondary text-background shadow-[0_0_15px_#00ffcc]'
                 : 'bg-surface-container-high text-on-surface-variant hover:text-white border border-outline/30'
             }`}
           >
@@ -268,7 +270,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
                 onClick={() => setSelectedCategory(isSelected ? '' : c.id)}
                 className={`font-headline text-xs px-3.5 py-2 rounded-xl font-semibold transition-all flex items-center space-x-2 ${
                   isSelected
-                    ? 'bg-primary text-white shadow-[0_0_12px_#ff2d78] border border-primary/50'
+                    ? 'bg-primary text-white shadow-[0_0_15px_#ff2d78] border border-primary/50'
                     : 'bg-surface-container-high hover:bg-primary/20 text-on-surface border border-outline/30'
                 }`}
               >
@@ -281,7 +283,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       </section>
 
       {/* 6. Onboarding Banner & Expandable Guide */}
-      <section className="bg-surface-container-high p-5 rounded-2xl border border-primary/30">
+      <section className="neon-card-primary p-5 rounded-2xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <div className="p-2.5 rounded-xl bg-primary/20 text-primary">
@@ -303,7 +305,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         </div>
 
         {showHowItWorks && (
-          <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 font-body text-xs text-on-surface animate-in fade-in duration-200">
+          <div className="mt-4 pt-4 border-t border-primary/30 grid grid-cols-1 sm:grid-cols-3 gap-4 font-body text-xs text-on-surface animate-in fade-in duration-200">
             <div className="bg-surface-container p-4 rounded-xl border border-outline/20">
               <span className="font-headline font-bold text-primary block mb-1">Step 1: Capture Evidence</span>
               <p className="text-on-surface-variant text-xs leading-relaxed">Take a photo with your phone, pick an issue category, and your GPS coordinates will auto-fill.</p>
@@ -321,7 +323,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       </section>
 
       {/* 7. Search & Filter Controls */}
-      <section className="bg-surface-container p-4 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-4 border border-outline/30">
+      <section className="neon-card p-4 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-4">
         <div className="relative w-full lg:w-96">
           <Search className="w-4 h-4 text-on-surface-variant absolute left-3.5 top-3" />
           <input
@@ -346,7 +348,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
             onClick={() => setHighPriorityOnly(!highPriorityOnly)}
             className={`font-label text-xs uppercase tracking-wider px-3.5 py-2 rounded-xl font-bold transition-all ${
               highPriorityOnly
-                ? 'bg-primary text-white shadow-[0_0_12px_#ff2d78]'
+                ? 'bg-primary text-white shadow-[0_0_15px_#ff2d78]'
                 : 'bg-surface-container-high text-on-surface-variant hover:text-white border border-outline/30'
             }`}
           >
@@ -374,7 +376,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         <div className="flex items-center justify-between mb-4">
           <h2 className="font-headline font-bold text-lg text-on-surface flex items-center space-x-2">
             <span>Reported Civic Issues</span>
-            <span className="font-label text-xs bg-secondary/20 text-secondary px-2.5 py-0.5 rounded-full font-bold border border-secondary/30">
+            <span className="font-label text-xs bg-secondary/20 text-secondary px-2.5 py-0.5 rounded-full font-bold border border-secondary/40 shadow-[0_0_8px_rgba(0,255,204,0.4)]">
               {filteredIssues.length} Reports
             </span>
           </h2>
@@ -383,12 +385,12 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="bg-surface-container rounded-2xl p-6 h-64 animate-pulse border border-outline/20"></div>
+              <div key={n} className="neon-card rounded-2xl p-6 h-64 animate-pulse"></div>
             ))}
           </div>
         ) : filteredIssues.length === 0 ? (
-          <div className="bg-surface-container rounded-3xl p-12 text-center text-on-surface-variant space-y-4 max-w-lg mx-auto my-8 border border-secondary/30 neon-border-secondary">
-            <div className="w-16 h-16 rounded-3xl bg-secondary/20 border border-secondary/40 flex items-center justify-center mx-auto text-secondary">
+          <div className="neon-card-secondary rounded-3xl p-12 text-center text-on-surface-variant space-y-4 max-w-lg mx-auto my-8">
+            <div className="w-16 h-16 rounded-3xl bg-secondary/20 border border-secondary/40 flex items-center justify-center mx-auto text-secondary shadow-[0_0_15px_rgba(0,255,204,0.4)]">
               <ShieldCheck className="w-8 h-8 text-secondary neon-text-secondary" />
             </div>
             <div>
@@ -409,7 +411,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
               </button>
               <button
                 onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
-                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-primary text-white font-bold transition-all shadow-[0_0_12px_#ff2d78] neon-btn-glow"
+                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-primary text-white font-bold transition-all shadow-[0_0_15px_#ff2d78] neon-btn-glow"
               >
                 Be the First to Report
               </button>
