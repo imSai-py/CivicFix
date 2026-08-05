@@ -117,9 +117,10 @@ export const LoginPage: React.FC<LoginPageProps> = ({ onSwitchToRegister, onSucc
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/30 disabled:opacity-50 mt-2"
+          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-primary via-[#e0005a] to-primary text-white font-headline font-bold text-sm tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(255,45,120,0.5)] hover:shadow-[0_0_35px_rgba(255,45,120,0.85)] hover:scale-[1.01] active:scale-95 disabled:opacity-50 mt-4 cursor-pointer relative overflow-hidden group"
         >
-          {isLoading ? 'Authenticating...' : 'Sign In'}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000"></div>
+          <span className="relative z-10">{isLoading ? 'Authenticating Access...' : 'Sign In To Account'}</span>
         </button>
       </form>
 

@@ -150,14 +150,19 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             <div className="flex items-center space-x-2">
               <button
                 onClick={() => setActiveTab('login')}
-                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl font-bold text-on-surface-variant hover:text-white hover:bg-surface-container-high transition-all flex items-center space-x-1.5"
+                className={`font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl font-bold transition-all duration-300 flex items-center space-x-2 group border active:scale-95 ${
+                  activeTab === 'login'
+                    ? 'bg-secondary text-background shadow-[0_0_15px_#00ffcc] border-secondary'
+                    : 'bg-surface-container/80 border-secondary/50 text-secondary hover:text-white hover:bg-secondary/20 hover:border-secondary shadow-[0_0_12px_rgba(0,255,204,0.3)] hover:shadow-[0_0_22px_rgba(0,255,204,0.7)]'
+                }`}
               >
-                <LogIn className="w-3.5 h-3.5 text-secondary" />
-                <span>Sign In</span>
+                <LogIn className="w-4 h-4 text-secondary group-hover:translate-x-1 transition-transform duration-300 drop-shadow-[0_0_6px_rgba(0,255,204,0.8)]" />
+                <span className="group-hover:neon-text-secondary">Sign In</span>
               </button>
+
               <button
                 onClick={() => setActiveTab('register')}
-                className="font-label text-xs uppercase tracking-wider px-4.5 py-2 rounded-xl bg-primary text-white font-bold transition-all shadow-[0_0_15px_rgba(255,45,120,0.5)] hover:shadow-[0_0_25px_rgba(255,45,120,0.8)] neon-btn-glow flex items-center space-x-1.5"
+                className="font-label text-xs uppercase tracking-wider px-4.5 py-2 rounded-xl bg-primary text-white font-bold transition-all shadow-[0_0_15px_rgba(255,45,120,0.5)] hover:shadow-[0_0_25px_rgba(255,45,120,0.8)] neon-btn-glow flex items-center space-x-1.5 active:scale-95"
               >
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Register</span>
