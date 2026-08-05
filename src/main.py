@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from sqlalchemy import text
 from src.core.config import get_settings
 from src.core.database import AsyncSessionFactory, engine
 from src.domain.common.exceptions import DomainException
@@ -25,11 +26,28 @@ settings = get_settings()
 async def lifespan(app: FastAPI):
     """
     Application lifespan manager handling startup and shutdown procedures.
-    Automatically creates database tables and seeds default categories and departments on startup.
+    Automatically creates database tables, migrates missing columns, and seeds default data on startup.
     """
     try:
         async with engine.begin() as conn:
             await conn.run_sync(BaseModel.metadata.create_all)
+
+            # Safe auto-migration for missing columns on existing SQLite/DB tables
+            columns_to_ensure = [
+                ("users", "xp_points", "INTEGER DEFAULT 0 NOT NULL"),
+                ("users", "reputation_rank", "VARCHAR(100) DEFAULT 'Civic Watcher' NOT NULL"),
+                ("issues", "resolution_photo_url", "VARCHAR(512) NULL"),
+                ("issues", "resolution_notes", "TEXT NULL"),
+                ("issues", "citizen_rating", "INTEGER NULL"),
+                ("issues", "citizen_feedback", "TEXT NULL"),
+                ("issues", "reopen_count", "INTEGER DEFAULT 0 NOT NULL"),
+            ]
+            for table, column, col_type in columns_to_ensure:
+                try:
+                    await conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {col_type}"))
+                except Exception:
+                    # Column already exists
+                    pass
 
         async with AsyncSessionFactory() as session:
             await seed_initial_data(session)
