@@ -159,15 +159,18 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         </div>
       </section>
 
-      {/* 3. Main Action CTA Button matching EXACT Stitch Screen 2 */}
+      {/* 3. Main Action CTA Button matching EXACT Stitch Screen 2 (Animated Pulsing Neon & Wiggle Icon) */}
       <section>
         <button
           onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
-          className="w-full bg-surface-container-high border-2 border-primary/50 text-on-surface rounded-2xl py-4.5 px-6 flex items-center justify-center space-x-3 neon-btn-glow transition-all duration-300 hover:border-primary active:scale-95 group relative overflow-hidden shadow-[0_0_15px_rgba(255,45,120,0.25)]"
+          className="w-full bg-surface-container-high/90 border-2 border-primary/60 text-on-surface rounded-2xl py-4.5 px-6 flex items-center justify-center space-x-3 animate-cta-glow hover:border-primary active:scale-95 transition-all duration-300 group relative overflow-hidden cursor-pointer"
         >
-          <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-          <Megaphone className="w-6 h-6 text-primary group-hover:scale-110 transition-transform duration-300" />
-          <span className="font-headline font-bold text-lg tracking-wide relative z-10 group-hover:neon-text-primary">
+          {/* Shimmer Sweep Animation */}
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent -translate-x-full animate-shimmer-sweep pointer-events-none"></div>
+
+          {/* Icon with hover rotation animation */}
+          <Megaphone className="w-6 h-6 text-primary neon-text-primary group-hover:rotate-12 group-hover:scale-125 transition-transform duration-300" />
+          <span className="font-headline font-bold text-lg text-on-surface tracking-wide relative z-10 group-hover:neon-text-primary transition-all">
             Report an Issue
           </span>
         </button>
