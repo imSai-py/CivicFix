@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { User as UserIcon, Mail, Phone, Lock, LogOut, Edit2, Check, X, Eye, EyeOff, AlertCircle, CheckCircle, Shield } from 'lucide-react';
+import { Shield, LogOut, CheckCircle2, AlertCircle, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../services/api';
 
@@ -8,350 +8,190 @@ interface ProfilePageProps {
 }
 
 export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => {
-  const { user, isAuthenticated, logout, refreshUser } = useAuth();
-  const [activeProfileTab, setActiveProfileTab] = useState<'info' | 'security'>('info');
+  const { user, logout, isAuthenticated } = useAuth();
+  const [activeTab, setActiveTab] = useState<'info' | 'security'>('info');
 
-  // Profile Edit State
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [editName, setEditName] = useState(user?.full_name || '');
-  const [editPhone, setEditPhone] = useState(user?.phone_number || '');
-  const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [profileMsg, setProfileMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  // Password Change State
-  const [currentPassword, setCurrentPassword] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
-  const [passwordMsg, setPasswordMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="max-w-md mx-auto my-12 glass-panel p-8 rounded-3xl text-center shadow-2xl border border-indigo-500/20">
-        <div className="w-12 h-12 rounded-2xl bg-indigo-600 flex items-center justify-center mx-auto mb-3">
-          <UserIcon className="w-6 h-6 text-white" />
-        </div>
-        <h2 className="text-2xl font-bold text-white mb-2">Access Your Profile</h2>
-        <p className="text-xs text-slate-400 mb-6">Please sign in to view and manage your account settings.</p>
+      <div className="max-w-md mx-auto my-12 bg-surface-container rounded-3xl p-8 text-center space-y-4 border border-secondary/30 neon-border-secondary">
+        <Shield className="w-12 h-12 text-secondary mx-auto neon-text-secondary" />
+        <h2 className="font-headline font-bold text-xl text-on-surface">Authentication Required</h2>
+        <p className="font-body text-xs text-on-surface-variant">Log in to view your profile and manage issue submissions.</p>
         <button
           onClick={onSwitchToLogin}
-          className="w-full py-3 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/30"
+          className="font-label text-xs uppercase tracking-wider px-6 py-3 rounded-xl bg-primary text-white font-bold transition-all shadow-[0_0_15px_rgba(255,45,120,0.4)] neon-btn-glow"
         >
-          Sign In / Register
+          Sign In Now
         </button>
       </div>
     );
   }
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
+  const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSavingProfile(true);
-    setProfileMsg(null);
-
-    try {
-      await authApi.updateProfile({
-        full_name: editName.trim(),
-        phone_number: editPhone.trim() || undefined,
-      });
-      await refreshUser();
-      setProfileMsg({ type: 'success', text: 'Profile details updated successfully!' });
-      setIsEditingProfile(false);
-    } catch (err: any) {
-      const msg = err.response?.data?.error?.message || 'Failed to update profile details.';
-      setProfileMsg({ type: 'error', text: msg });
-    } finally {
-      setIsSavingProfile(false);
-    }
-  };
-
-  const handleChangePassword = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setPasswordMsg(null);
-
-    if (newPassword.length < 8) {
-      setPasswordMsg({ type: 'error', text: 'New password must be at least 8 characters long.' });
-      return;
-    }
-
     if (newPassword !== confirmPassword) {
-      setPasswordMsg({ type: 'error', text: 'New password and confirmation do not match.' });
+      setPasswordMessage({ type: 'error', text: 'New password and confirmation do not match.' });
       return;
     }
 
     setIsUpdatingPassword(true);
+    setPasswordMessage(null);
 
     try {
-      await authApi.changePassword({
-        current_password: currentPassword,
-        new_password: newPassword,
-      });
-      setPasswordMsg({ type: 'success', text: 'Password updated successfully!' });
-      setCurrentPassword('');
+      await authApi.changePassword({ current_password: oldPassword, new_password: newPassword });
+      setPasswordMessage({ type: 'success', text: 'Password changed successfully!' });
+      setOldPassword('');
       setNewPassword('');
       setConfirmPassword('');
     } catch (err: any) {
-      const msg = err.response?.data?.error?.message || 'Failed to update password. Please check your current password.';
-      setPasswordMsg({ type: 'error', text: msg });
+      setPasswordMessage({
+        type: 'error',
+        text: err.response?.data?.error?.message || 'Failed to update password.',
+      });
     } finally {
       setIsUpdatingPassword(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      {/* Tabbed Segment Control Header */}
-      <div className="glass-panel p-1.5 rounded-2xl border border-slate-800/80 flex items-center space-x-1 shadow-lg">
-        <button
-          onClick={() => setActiveProfileTab('info')}
-          className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all ${
-            activeProfileTab === 'info'
-              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-          }`}
-        >
-          <UserIcon className="w-4 h-4" />
-          <span>Personal Info</span>
-        </button>
+    <div className="max-w-3xl mx-auto space-y-8 my-6">
+      {/* Profile Header matching Stitch Screen 5 */}
+      <div className="bg-surface-container rounded-3xl p-6 border border-secondary/30 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_0_20px_rgba(0,255,204,0.1)]">
+        <div className="flex items-center space-x-4">
+          <div className="w-16 h-16 rounded-2xl bg-surface-dim border-2 border-primary flex items-center justify-center text-primary text-2xl font-headline font-bold shadow-[0_0_15px_rgba(255,45,120,0.6)]">
+            {user.full_name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div className="flex items-center space-x-2">
+              <h1 className="font-headline font-bold text-2xl text-on-surface">{user.full_name}</h1>
+              <span className="font-label text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-secondary/20 text-secondary border border-secondary/40">
+                {user.role}
+              </span>
+            </div>
+            <p className="font-body text-xs text-on-surface-variant mt-0.5">{user.email}</p>
+          </div>
+        </div>
 
         <button
-          onClick={() => setActiveProfileTab('security')}
-          className={`flex-1 flex items-center justify-center space-x-2 py-2.5 px-4 rounded-xl text-xs font-semibold transition-all ${
-            activeProfileTab === 'security'
-              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-              : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60'
-          }`}
+          onClick={logout}
+          className="flex items-center space-x-2 font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-rose-500/20 text-rose-400 border border-outline/30 hover:border-rose-500/40 transition-all font-bold"
         >
-          <Shield className="w-4 h-4" />
-          <span>Security</span>
+          <LogOut className="w-4 h-4" />
+          <span>Sign Out</span>
         </button>
       </div>
 
-      {/* Tab 1: Personal Info Content */}
-      {activeProfileTab === 'info' && (
-        <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-indigo-500/20 glow-indigo">
-          <div className="flex items-center justify-between border-b border-slate-800 pb-5 mb-6">
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center text-white font-bold text-lg shadow-lg shadow-indigo-500/30">
-                {user.full_name.charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">{user.full_name}</h2>
-                <span className="inline-block text-[11px] font-semibold text-indigo-400 uppercase tracking-wider bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20">
-                  {user.role} Account
-                </span>
-              </div>
-            </div>
+      {/* Tab Switcher */}
+      <div className="flex border-b border-outline/30 font-label text-xs uppercase tracking-wider font-bold">
+        <button
+          onClick={() => setActiveTab('info')}
+          className={`pb-3 px-4 border-b-2 transition-all ${
+            activeTab === 'info'
+              ? 'border-secondary text-secondary neon-text-secondary'
+              : 'border-transparent text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          Personal Details
+        </button>
+        <button
+          onClick={() => setActiveTab('security')}
+          className={`pb-3 px-4 border-b-2 transition-all ${
+            activeTab === 'security'
+              ? 'border-primary text-primary neon-text-primary'
+              : 'border-transparent text-on-surface-variant hover:text-on-surface'
+          }`}
+        >
+          Security & Password
+        </button>
+      </div>
 
-            {!isEditingProfile && (
-              <button
-                onClick={() => {
-                  setEditName(user.full_name);
-                  setEditPhone(user.phone_number || '');
-                  setIsEditingProfile(true);
-                }}
-                className="flex items-center space-x-1.5 px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-medium text-slate-300 hover:text-white hover:border-indigo-500 transition-all"
-              >
-                <Edit2 className="w-3.5 h-3.5" />
-                <span>Edit Profile</span>
-              </button>
-            )}
+      {/* Tab Content */}
+      {activeTab === 'info' ? (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="bg-surface-container rounded-2xl p-5 border border-outline/20 space-y-2">
+            <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold block">Account Status</span>
+            <div className="flex items-center space-x-2 text-emerald-400 font-headline font-bold text-sm">
+              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+              <span>Verified Citizen Profile</span>
+            </div>
           </div>
 
-          {profileMsg && (
-            <div className={`mb-6 p-3 rounded-xl text-xs flex items-center space-x-2 ${
-              profileMsg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
-            }`}>
-              {profileMsg.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-              <span>{profileMsg.text}</span>
+          <div className="bg-surface-container rounded-2xl p-5 border border-outline/20 space-y-2">
+            <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold block">Impact Contributions</span>
+            <div className="flex items-center space-x-2 text-secondary font-headline font-bold text-sm">
+              <Award className="w-4 h-4 text-secondary" />
+              <span>Active Neighborhood Guardian</span>
             </div>
-          )}
-
-          {isEditingProfile ? (
-            <form onSubmit={handleSaveProfile} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Full Name</label>
-                <input
-                  type="text"
-                  required
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1">Phone Number (+91 India)</label>
-                <input
-                  type="tel"
-                  placeholder="+91 98765 43210"
-                  value={editPhone}
-                  onChange={(e) => setEditPhone(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-                />
-              </div>
-
-              <div className="flex items-center space-x-3 pt-2">
-                <button
-                  type="submit"
-                  disabled={isSavingProfile}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-medium transition-all shadow-md shadow-indigo-600/30"
-                >
-                  <Check className="w-4 h-4" />
-                  <span>{isSavingProfile ? 'Saving...' : 'Save Changes'}</span>
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setIsEditingProfile(false)}
-                  className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-medium text-slate-400 hover:text-white"
-                >
-                  <X className="w-4 h-4" />
-                  <span>Cancel</span>
-                </button>
-              </div>
-            </form>
-          ) : (
-            <div className="space-y-4 text-sm">
-              <div className="flex items-center space-x-3 p-3 bg-slate-900/60 rounded-xl border border-slate-800/80">
-                <UserIcon className="w-4 h-4 text-indigo-400 shrink-0" />
-                <div>
-                  <span className="text-[11px] text-slate-400 block">Full Name</span>
-                  <span className="font-semibold text-white">{user.full_name}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 p-3 bg-slate-900/60 rounded-xl border border-slate-800/80">
-                <Mail className="w-4 h-4 text-indigo-400 shrink-0" />
-                <div>
-                  <span className="text-[11px] text-slate-400 block">Email Address</span>
-                  <span className="font-semibold text-white">{user.email}</span>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-3 p-3 bg-slate-900/60 rounded-xl border border-slate-800/80">
-                <Phone className="w-4 h-4 text-indigo-400 shrink-0" />
-                <div>
-                  <span className="text-[11px] text-slate-400 block">Phone Number</span>
-                  <span className="font-semibold text-white">{user.phone_number || 'Not provided'}</span>
-                </div>
-              </div>
-
-              {/* Logout Button */}
-              <div className="pt-4 border-t border-slate-800 flex justify-end">
-                <button
-                  onClick={logout}
-                  className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-rose-500/10 hover:bg-rose-500 text-rose-400 hover:text-white border border-rose-500/20 font-medium text-xs transition-all"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Sign Out Account</span>
-                </button>
-              </div>
-            </div>
-          )}
+          </div>
         </div>
-      )}
+      ) : (
+        <div className="bg-surface-container rounded-3xl p-6 border border-primary/30 space-y-4 max-w-md">
+          <h3 className="font-headline font-bold text-lg text-on-surface">Change Password</h3>
 
-      {/* Tab 2: Security / Change Password Content */}
-      {activeProfileTab === 'security' && (
-        <div className="glass-panel rounded-3xl p-6 sm:p-8 border border-slate-800">
-          <div className="flex items-center space-x-2 border-b border-slate-800 pb-4 mb-6">
-            <Lock className="w-5 h-5 text-indigo-400" />
-            <div>
-              <h3 className="text-lg font-bold text-white">Security & Password</h3>
-              <p className="text-xs text-slate-400">Update your account password to maintain system security.</p>
-            </div>
-          </div>
-
-          {passwordMsg && (
-            <div className={`mb-6 p-3.5 rounded-xl text-xs flex items-center space-x-2 ${
-              passwordMsg.type === 'success' ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400' : 'bg-rose-500/10 border border-rose-500/20 text-rose-400'
-            }`}>
-              {passwordMsg.type === 'success' ? <CheckCircle className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-              <span>{passwordMsg.text}</span>
+          {passwordMessage && (
+            <div
+              className={`p-3.5 rounded-xl text-xs flex items-center space-x-2 ${
+                passwordMessage.type === 'success'
+                  ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-rose-500/10 text-rose-300 border border-rose-500/30'
+              }`}
+            >
+              {passwordMessage.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+              ) : (
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+              )}
+              <span>{passwordMessage.text}</span>
             </div>
           )}
 
-          <form onSubmit={handleChangePassword} className="space-y-4">
-            {/* Field 1: Current Password */}
+          <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">1. Current Password *</label>
-              <div className="relative">
-                <input
-                  type={showCurrentPassword ? 'text' : 'password'}
-                  required
-                  placeholder="Enter current password"
-                  value={currentPassword}
-                  onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                  className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-200"
-                >
-                  {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+              <label className="block font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">Current Password</label>
+              <input
+                type="password"
+                required
+                value={oldPassword}
+                onChange={(e) => setOldPassword(e.target.value)}
+                className="w-full bg-surface-dim border border-outline/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-secondary"
+              />
             </div>
 
-            {/* Field 2: New Password */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">2. New Password *</label>
-              <div className="relative">
-                <input
-                  type={showNewPassword ? 'text' : 'password'}
-                  required
-                  minLength={8}
-                  placeholder="Enter new password (min. 8 chars)"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-200"
-                >
-                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+              <label className="block font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">New Password</label>
+              <input
+                type="password"
+                required
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="w-full bg-surface-dim border border-outline/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-secondary"
+              />
             </div>
 
-            {/* Field 3: Confirm New Password */}
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">3. Confirm New Password *</label>
-              <div className="relative">
-                <input
-                  type={showConfirmPassword ? 'text' : 'password'}
-                  required
-                  minLength={8}
-                  placeholder="Re-enter new password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-800 rounded-xl pl-4 pr-10 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute right-3.5 top-3 text-slate-400 hover:text-slate-200"
-                >
-                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </div>
+              <label className="block font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">Confirm New Password</label>
+              <input
+                type="password"
+                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="w-full bg-surface-dim border border-outline/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-secondary"
+              />
             </div>
 
-            <div className="pt-2">
-              <button
-                type="submit"
-                disabled={isUpdatingPassword}
-                className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-all shadow-lg shadow-indigo-600/30 disabled:opacity-50"
-              >
-                {isUpdatingPassword ? 'Updating Password...' : 'Update Password'}
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={isUpdatingPassword}
+              className="w-full py-3 rounded-xl bg-primary text-white font-label text-xs uppercase tracking-wider font-bold transition-all shadow-[0_0_15px_rgba(255,45,120,0.4)] neon-btn-glow"
+            >
+              {isUpdatingPassword ? 'Updating...' : 'Update Password'}
+            </button>
           </form>
         </div>
       )}

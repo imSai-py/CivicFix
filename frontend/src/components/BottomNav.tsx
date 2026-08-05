@@ -15,64 +15,67 @@ export const BottomNav: React.FC<BottomNavProps> = ({
   const isProfileActive = activeTab === 'profile' || activeTab === 'login' || activeTab === 'register';
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-lg border-t border-slate-800/80 px-2 py-1.5 md:hidden">
-      <div className="flex items-center justify-around max-w-md mx-auto">
-        {/* Home */}
-        <button
-          onClick={() => setActiveTab('feed')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all relative ${
-            activeTab === 'feed' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {activeTab === 'feed' && (
-            <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500"></span>
-          )}
-          <Home className={`w-5 h-5 ${activeTab === 'feed' ? 'fill-indigo-500/20' : ''}`} />
-          <span className="text-[10px] font-medium mt-1">Home</span>
-        </button>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-surface-container border-t border-secondary/30 shadow-[0_-4px_20px_rgba(0,255,204,0.15)] rounded-t-xl flex justify-around items-center h-20 px-2 pb-safe md:hidden">
+      {/* 1. Home */}
+      <button
+        onClick={() => setActiveTab('feed')}
+        className={`flex flex-col items-center justify-center w-16 h-full relative transition-all active:scale-90 ${
+          activeTab === 'feed'
+            ? 'text-secondary drop-shadow-[0_0_10px_rgba(0,255,204,0.8)] font-bold'
+            : 'text-on-surface-variant opacity-60 hover:opacity-100'
+        }`}
+      >
+        {activeTab === 'feed' && (
+          <div className="absolute -top-3 w-8 h-1 bg-secondary rounded-full shadow-[0_0_8px_#00ffcc]"></div>
+        )}
+        <Home className="w-6 h-6 mb-1" />
+        <span className="font-label text-[10px] uppercase tracking-wider">Home</span>
+      </button>
 
-        {/* Map */}
-        <button
-          onClick={() => setActiveTab('map')}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all relative ${
-            activeTab === 'map' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {activeTab === 'map' && (
-            <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500"></span>
-          )}
-          <Map className="w-5 h-5" />
-          <span className="text-[10px] font-medium mt-1">Map</span>
-        </button>
+      {/* 2. Map */}
+      <button
+        onClick={() => setActiveTab('map')}
+        className={`flex flex-col items-center justify-center w-16 h-full relative transition-all active:scale-90 ${
+          activeTab === 'map'
+            ? 'text-secondary drop-shadow-[0_0_10px_rgba(0,255,204,0.8)] font-bold'
+            : 'text-on-surface-variant opacity-60 hover:opacity-100'
+        }`}
+      >
+        {activeTab === 'map' && (
+          <div className="absolute -top-3 w-8 h-1 bg-secondary rounded-full shadow-[0_0_8px_#00ffcc]"></div>
+        )}
+        <Map className="w-6 h-6 mb-1" />
+        <span className="font-label text-[10px] uppercase tracking-wider">Map</span>
+      </button>
 
-        {/* Dedicated Report Page */}
-        <button
-          onClick={() => (isAuthenticated ? setActiveTab('report') : setActiveTab('login'))}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all relative ${
-            activeTab === 'report' ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {activeTab === 'report' && (
-            <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500"></span>
-          )}
-          <FilePlus className="w-5 h-5 text-indigo-400" />
-          <span className="text-[10px] font-medium mt-1 text-slate-300">Report</span>
-        </button>
+      {/* 3. Report (Prominent middle button) */}
+      <button
+        onClick={() => (isAuthenticated ? setActiveTab('report') : setActiveTab('login'))}
+        className={`flex flex-col items-center justify-center w-16 h-full relative transition-all active:scale-90 -top-3 ${
+          activeTab === 'report' ? 'text-primary' : 'text-on-surface-variant'
+        }`}
+      >
+        <div className="bg-surface border border-secondary/50 rounded-full p-3 mb-1 shadow-[inset_0_0_8px_rgba(0,255,204,0.2),0_0_12px_rgba(0,255,204,0.4)]">
+          <FilePlus className="w-6 h-6 text-secondary" />
+        </div>
+        <span className="font-label text-[10px] uppercase tracking-wider text-secondary font-bold">Report</span>
+      </button>
 
-        {/* Profile / Auth */}
-        <button
-          onClick={() => (isAuthenticated ? setActiveTab('profile') : setActiveTab('login'))}
-          className={`flex flex-col items-center py-1 px-3 rounded-xl transition-all relative ${
-            isProfileActive ? 'text-indigo-400' : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          {isProfileActive && (
-            <span className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-indigo-500 rounded-full shadow-sm shadow-indigo-500"></span>
-          )}
-          <User className="w-5 h-5" />
-          <span className="text-[10px] font-medium mt-1">Profile</span>
-        </button>
-      </div>
+      {/* 4. Profile */}
+      <button
+        onClick={() => (isAuthenticated ? setActiveTab('profile') : setActiveTab('login'))}
+        className={`flex flex-col items-center justify-center w-16 h-full relative transition-all active:scale-90 ${
+          isProfileActive
+            ? 'text-secondary drop-shadow-[0_0_10px_rgba(0,255,204,0.8)] font-bold'
+            : 'text-on-surface-variant opacity-60 hover:opacity-100'
+        }`}
+      >
+        {isProfileActive && (
+          <div className="absolute -top-3 w-8 h-1 bg-secondary rounded-full shadow-[0_0_8px_#00ffcc]"></div>
+        )}
+        <User className="w-6 h-6 mb-1" />
+        <span className="font-label text-[10px] uppercase tracking-wider">Profile</span>
+      </button>
     </nav>
   );
 };

@@ -2,25 +2,25 @@ import React, { useEffect, useState } from 'react';
 import {
   Search,
   ShieldCheck,
-  Activity,
   Tag,
   ListFilter,
   FilePlus,
   MapPin,
   CheckCircle2,
-  Clock,
   Sparkles,
   ChevronDown,
   ChevronUp,
   Layers,
   Zap,
-  Building2,
-  X
+  X,
+  Radio,
+  ArrowRight
 } from 'lucide-react';
 import { IssueCard } from '../components/IssueCard';
-import { issuesApi, categoriesApi } from '../services/api';
+import { issuesApi, categoriesApi, getAttachmentUrl } from '../services/api';
 import { Category, Issue } from '../types';
 import { CustomDropdown, DropdownOption } from '../components/CustomDropdown';
+import { useAuth } from '../context/AuthContext';
 
 interface FeedPageProps {
   isAuthenticated: boolean;
@@ -28,6 +28,7 @@ interface FeedPageProps {
 }
 
 export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate }) => {
+  const { user } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -64,7 +65,6 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
     fetchFeedData();
   }, [selectedStatus, selectedCategory]);
 
-  // Filtered Issues Calculation
   const filteredIssues = issues.filter((i) => {
     const matchesSearch =
       i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -76,7 +76,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
     return matchesSearch && matchesPriority;
   });
 
-  // Impact Metrics Calculation
+  // Impact Metrics
   const totalIssuesCount = issues.length;
   const resolvedCount = issues.filter((i) => i.status === 'RESOLVED').length;
   const inProgressCount = issues.filter((i) => i.status === 'IN_PROGRESS' || i.status === 'ACKNOWLEDGED').length;
@@ -85,7 +85,6 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
     if (onNavigate) onNavigate(tab);
   };
 
-  // Status Dropdown Options
   const statusOptions: DropdownOption[] = [
     { value: '', label: 'All Statuses', icon: <ListFilter className="w-3.5 h-3.5 text-slate-400" /> },
     { value: 'SUBMITTED', label: 'Submitted', badgeColor: 'bg-amber-500' },
@@ -95,7 +94,6 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
     { value: 'REJECTED', label: 'Rejected', badgeColor: 'bg-rose-500' },
   ];
 
-  // Category Dropdown Options
   const categoryOptions: DropdownOption[] = [
     { value: '', label: 'All Categories', icon: <Tag className="w-3.5 h-3.5 text-slate-400" /> },
     ...categories.map((c) => ({
@@ -105,144 +103,151 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
     })),
   ];
 
+  const firstName = user?.full_name ? user.full_name.split(' ')[0] : 'Citizen';
+
   return (
-    <div className="space-y-8">
-      {/* 1. Stronger Hero Section */}
-      <div className="relative rounded-3xl p-6 sm:p-12 overflow-hidden glass-panel glow-indigo border border-indigo-500/20">
-        <div className="absolute top-0 right-0 -mt-12 -mr-12 w-96 h-96 bg-indigo-600/20 rounded-full blur-3xl pointer-events-none"></div>
+    <div className="space-y-10">
+      {/* 1. Greeting Header matching Stitch Screen 2 */}
+      <section className="space-y-2">
+        <h2 className="font-headline font-bold text-3xl md:text-4xl text-on-surface">
+          Good evening, <span className="text-secondary neon-text-secondary">{firstName}</span>.
+        </h2>
+        <p className="font-label text-xs text-on-surface-variant uppercase tracking-widest opacity-80">
+          Municipal Operations Sector • Live Platform Stream
+        </p>
+      </section>
 
-        <div className="max-w-3xl relative z-10 space-y-6">
-          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-300 text-xs font-semibold uppercase tracking-wider">
-            <Activity className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Civic Infrastructure Operations Platform</span>
+      {/* 2. Quick Stats Bento Grid matching Stitch Screen 2 */}
+      <section className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* Stat 1: Reported */}
+        <div className="bg-surface-container rounded-xl p-5 neon-border-secondary flex flex-col justify-between h-36 group hover:bg-surface-container-high transition-colors duration-300 relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-16 h-16 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/20 transition-all"></div>
+          <div className="flex items-center space-x-2 text-secondary">
+            <Layers className="w-5 h-5 text-secondary" />
+            <span className="font-label text-xs uppercase tracking-wider font-bold">Reported</span>
           </div>
-
-          <h1 className="text-3xl sm:text-5xl font-extrabold text-white tracking-tight leading-tight">
-            Transparent Civic Reporting <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 via-violet-300 to-amber-300">
-              For Better, Safer Cities.
-            </span>
-          </h1>
-
-          <p className="text-slate-300 text-sm sm:text-base leading-relaxed max-w-2xl">
-            Report infrastructure failures, potholes, streetlights, and public hazards directly to municipal department officials with real-time audit lifecycle tracking.
-          </p>
-
-          {/* Primary & Secondary Call to Action Buttons */}
-          <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button
-              onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
-              className="flex items-center space-x-2 px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm transition-all shadow-lg shadow-indigo-600/40 hover:scale-[1.02] active:scale-95"
-            >
-              <FilePlus className="w-5 h-5" />
-              <span>Report an Issue Now</span>
-            </button>
-
-            <button
-              onClick={() => navigateTo('map')}
-              className="flex items-center space-x-2 px-5 py-3.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 text-slate-200 font-semibold text-sm border border-slate-700 hover:border-indigo-500/40 transition-all"
-            >
-              <MapPin className="w-4 h-4 text-indigo-400" />
-              <span>View Live GeoMap</span>
-            </button>
-
-            <button
-              onClick={() => setSelectedStatus('RESOLVED')}
-              className="flex items-center space-x-2 px-5 py-3.5 rounded-2xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 font-medium text-sm border border-slate-800 transition-all"
-            >
-              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-              <span>See Recent Fixes</span>
-            </button>
+          <div className="font-headline font-bold text-4xl mt-2 text-on-surface">
+            {totalIssuesCount}
           </div>
+        </div>
 
-          {/* 3-Step How It Works Benefit Strip */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-slate-800/80">
-            <div className="flex items-center space-x-3 p-3 rounded-2xl bg-slate-900/40 border border-slate-800/60">
-              <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400 shrink-0">
-                <Sparkles className="w-4 h-4" />
+        {/* Stat 2: Resolved */}
+        <div className="bg-surface-container rounded-xl p-5 border border-surface-variant flex flex-col justify-between h-36 group hover:bg-surface-container-high transition-colors duration-300">
+          <div className="flex items-center space-x-2 text-tertiary">
+            <CheckCircle2 className="w-5 h-5 text-tertiary" />
+            <span className="font-label text-xs uppercase tracking-wider font-bold">Resolved</span>
+          </div>
+          <div className="font-headline font-bold text-4xl mt-2 text-on-surface">
+            {resolvedCount}
+          </div>
+        </div>
+
+        {/* Stat 3: Grid Status (Spans 2 columns) */}
+        <div className="col-span-2 bg-surface-container rounded-xl p-5 border border-primary/20 shadow-[inset_0_0_20px_rgba(255,45,120,0.05)] flex items-center justify-between relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+          <div>
+            <h3 className="font-label text-xs uppercase tracking-wider text-primary mb-1 font-bold">City Grid Status</h3>
+            <p className="font-headline font-semibold text-xl text-on-surface">Stable • {inProgressCount} Active Fixes</p>
+          </div>
+          <div className="w-12 h-12 rounded-full border-2 border-primary/30 flex items-center justify-center neon-text-primary">
+            <Zap className="w-6 h-6 text-primary" />
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Main Action CTA Button matching Stitch Screen 2 */}
+      <section>
+        <button
+          onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
+          className="w-full bg-surface-container-high border-2 border-primary/50 text-on-surface rounded-full py-4 px-6 flex items-center justify-center space-x-3 neon-btn-glow transition-all duration-300 hover:border-primary active:scale-95 group relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+          <FilePlus className="w-6 h-6 text-primary group-hover:scale-110 transition-transform duration-300" />
+          <span className="font-headline font-bold text-lg tracking-wide relative z-10 group-hover:neon-text-primary">Report an Issue Now</span>
+        </button>
+      </section>
+
+      {/* 4. Happening Nearby Horizontal Snap-Scroll Stream */}
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-headline font-bold text-xl text-on-surface flex items-center">
+            <Radio className="w-5 h-5 text-secondary mr-2" />
+            <span>Happening Nearby</span>
+          </h3>
+          <button
+            onClick={() => navigateTo('map')}
+            className="text-secondary font-label text-xs uppercase tracking-wider hover:neon-text-secondary transition-all font-bold"
+          >
+            View Map
+          </button>
+        </div>
+
+        <div className="flex overflow-x-auto gap-4 pb-4 snap-x snap-mandatory no-scrollbar">
+          {issues.slice(0, 5).map((issue) => {
+            const hasPhoto = issue.attachments && issue.attachments.length > 0;
+            return (
+              <div
+                key={issue.id}
+                onClick={() => navigateTo('feed')}
+                className="min-w-[280px] max-w-[300px] snap-center bg-surface-container-high/60 backdrop-blur-md rounded-xl border border-surface-variant p-4 flex flex-col justify-between gap-3 group hover:border-secondary/50 transition-colors cursor-pointer"
+              >
+                <div>
+                  <div className="flex justify-between items-start mb-2">
+                    <span className={`font-label text-[10px] uppercase px-2 py-0.5 rounded tracking-wider font-bold ${
+                      issue.status === 'RESOLVED' ? 'bg-emerald-500/20 text-emerald-300' :
+                      issue.status === 'IN_PROGRESS' ? 'bg-tertiary/20 text-tertiary' : 'bg-secondary/20 text-secondary'
+                    }`}>
+                      {issue.status}
+                    </span>
+                    <span className="text-on-surface-variant text-[11px]">
+                      {new Date(issue.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  {hasPhoto && (
+                    <div className="w-full h-32 rounded-lg bg-surface-dim overflow-hidden relative border border-white/5 mb-2">
+                      <img
+                        src={getAttachmentUrl(issue.attachments[0].file_path)}
+                        alt={issue.title}
+                        className="object-cover w-full h-full opacity-80 group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  )}
+
+                  <h4 className="font-headline font-semibold text-sm mb-1 text-on-surface truncate">{issue.title}</h4>
+                  <p className="font-body text-xs text-on-surface-variant line-clamp-2">{issue.description}</p>
+                </div>
+
+                <div className="flex items-center text-xs text-on-surface-variant font-body pt-2 border-t border-slate-800">
+                  <MapPin className="w-3.5 h-3.5 text-secondary mr-1 shrink-0" />
+                  <span className="truncate">{issue.location.address || `${issue.location.latitude.toFixed(3)}, ${issue.location.longitude.toFixed(3)}`}</span>
+                </div>
               </div>
-              <div>
-                <h4 className="text-xs font-bold text-white">1. Report in 30 Seconds</h4>
-                <p className="text-[11px] text-slate-400">Snap photo & auto-geotag location</p>
-              </div>
+            );
+          })}
+
+          <div
+            onClick={() => navigateTo('map')}
+            className="min-w-[200px] snap-center bg-surface-container-high/60 backdrop-blur-md rounded-xl border border-surface-variant p-4 flex flex-col items-center justify-center group hover:border-secondary/50 transition-colors cursor-pointer"
+          >
+            <div className="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center mb-2 group-hover:bg-secondary/20 group-hover:text-secondary transition-colors text-on-surface-variant">
+              <ArrowRight className="w-6 h-6" />
             </div>
-
-            <div className="flex items-center space-x-3 p-3 rounded-2xl bg-slate-900/40 border border-slate-800/60">
-              <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 shrink-0">
-                <Clock className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white">2. Real-Time Tracking</h4>
-                <p className="text-[11px] text-slate-400">Follow official department logs</p>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-3 p-3 rounded-2xl bg-slate-900/40 border border-slate-800/60">
-              <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 shrink-0">
-                <CheckCircle2 className="w-4 h-4" />
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-white">3. Verified Neighborhood Fix</h4>
-                <p className="text-[11px] text-slate-400">Municipal crew resolves hazard</p>
-              </div>
-            </div>
+            <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors font-bold">View All on Map</span>
           </div>
         </div>
-      </div>
+      </section>
 
-      {/* 2. Platform Impact & Social Proof Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="glass-card p-4 rounded-2xl border border-indigo-500/20 flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Reports</span>
-            <div className="text-2xl font-extrabold text-white mt-1">{totalIssuesCount}</div>
-          </div>
-          <div className="p-2.5 rounded-xl bg-indigo-600/20 text-indigo-400">
-            <Layers className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="glass-card p-4 rounded-2xl border border-emerald-500/20 flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-semibold text-emerald-400 uppercase tracking-wider">Fixes Resolved</span>
-            <div className="text-2xl font-extrabold text-white mt-1">{resolvedCount}</div>
-          </div>
-          <div className="p-2.5 rounded-xl bg-emerald-500/20 text-emerald-400">
-            <CheckCircle2 className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="glass-card p-4 rounded-2xl border border-amber-500/20 flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-semibold text-amber-300 uppercase tracking-wider">Active Crews</span>
-            <div className="text-2xl font-extrabold text-white mt-1">{inProgressCount}</div>
-          </div>
-          <div className="p-2.5 rounded-xl bg-amber-500/20 text-amber-400">
-            <Zap className="w-5 h-5" />
-          </div>
-        </div>
-
-        <div className="glass-card p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
-          <div>
-            <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Municipal Depts</span>
-            <div className="text-2xl font-extrabold text-white mt-1">4 Active</div>
-          </div>
-          <div className="p-2.5 rounded-xl bg-slate-800 text-slate-300">
-            <Building2 className="w-5 h-5" />
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Clickable Category Quick-Filter Strip */}
-      <div className="glass-panel p-4 rounded-2xl space-y-3">
-        <span className="text-xs font-bold text-slate-300 uppercase tracking-wider block">Browse Issues By Category</span>
+      {/* 5. Clickable Category Quick-Filter Strip */}
+      <section className="bg-surface-container p-5 rounded-2xl border border-secondary/30 space-y-3">
+        <span className="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider block">Browse Issues By Category</span>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedCategory('')}
-            className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
+            className={`font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl font-bold transition-all ${
               selectedCategory === ''
-                ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                : 'bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white border border-slate-800'
+                ? 'bg-secondary text-background shadow-[0_0_12px_#00ffcc]'
+                : 'bg-surface-container-high text-on-surface-variant hover:text-white border border-outline/30'
             }`}
           >
             🌟 All Categories
@@ -261,10 +266,10 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
               <button
                 key={c.id}
                 onClick={() => setSelectedCategory(isSelected ? '' : c.id)}
-                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center space-x-1.5 ${
+                className={`font-headline text-xs px-3.5 py-2 rounded-xl font-semibold transition-all flex items-center space-x-2 ${
                   isSelected
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30 border border-indigo-500/50'
-                    : 'bg-slate-900/90 hover:bg-indigo-600/20 text-slate-300 border border-slate-800 hover:border-indigo-500/30'
+                    ? 'bg-primary text-white shadow-[0_0_12px_#ff2d78] border border-primary/50'
+                    : 'bg-surface-container-high hover:bg-primary/20 text-on-surface border border-outline/30'
                 }`}
               >
                 <span>{emoji}</span>
@@ -273,24 +278,24 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
             );
           })}
         </div>
-      </div>
+      </section>
 
-      {/* 4. First-Time Visitor Banner & Expandable Guide */}
-      <div className="glass-panel p-4 rounded-2xl border border-indigo-500/30 bg-indigo-950/20">
+      {/* 6. Onboarding Banner & Expandable Guide */}
+      <section className="bg-surface-container-high p-5 rounded-2xl border border-primary/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2 rounded-xl bg-indigo-600/20 text-indigo-300">
-              <Sparkles className="w-5 h-5" />
+            <div className="p-2.5 rounded-xl bg-primary/20 text-primary">
+              <Sparkles className="w-5 h-5 text-primary neon-text-primary" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-white">New to CivicFix?</h3>
-              <p className="text-xs text-slate-400">Report your first municipal issue in under a minute with real-time audit updates.</p>
+              <h3 className="font-headline font-bold text-sm text-on-surface">New to CivicFix?</h3>
+              <p className="font-body text-xs text-on-surface-variant">Report your first municipal issue in under a minute with real-time audit updates.</p>
             </div>
           </div>
 
           <button
             onClick={() => setShowHowItWorks(!showHowItWorks)}
-            className="flex items-center space-x-1 text-xs font-semibold text-indigo-400 hover:text-indigo-300 px-3 py-1.5 rounded-xl hover:bg-indigo-600/10 transition-colors"
+            className="flex items-center space-x-1 font-label text-xs font-bold text-secondary hover:text-primary px-3 py-1.5 rounded-xl hover:bg-secondary/10 transition-colors uppercase tracking-wider"
           >
             <span>{showHowItWorks ? 'Hide Guide' : 'How It Works'}</span>
             {showHowItWorks ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -298,57 +303,54 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         </div>
 
         {showHowItWorks && (
-          <div className="mt-4 pt-4 border-t border-slate-800/80 grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs text-slate-300 animate-in fade-in duration-200">
-            <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
-              <span className="font-bold text-indigo-400 block mb-1">Step 1: Capture Evidence</span>
-              <p className="text-slate-400 text-[11px] leading-relaxed">Take a photo with your phone or camera, pick an issue category, and your GPS location will auto-fill.</p>
+          <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-3 gap-4 font-body text-xs text-on-surface animate-in fade-in duration-200">
+            <div className="bg-surface-container p-4 rounded-xl border border-outline/20">
+              <span className="font-headline font-bold text-primary block mb-1">Step 1: Capture Evidence</span>
+              <p className="text-on-surface-variant text-xs leading-relaxed">Take a photo with your phone, pick an issue category, and your GPS coordinates will auto-fill.</p>
             </div>
-            <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
-              <span className="font-bold text-amber-400 block mb-1">Step 2: Official Triage</span>
-              <p className="text-slate-400 text-[11px] leading-relaxed">Municipal department officials review your report, acknowledge it, and assign a specialized maintenance crew.</p>
+            <div className="bg-surface-container p-4 rounded-xl border border-outline/20">
+              <span className="font-headline font-bold text-tertiary block mb-1">Step 2: Official Triage</span>
+              <p className="text-on-surface-variant text-xs leading-relaxed">Municipal officials review your report, acknowledge it, and dispatch a specialized maintenance crew.</p>
             </div>
-            <div className="bg-slate-900/80 p-3.5 rounded-xl border border-slate-800">
-              <span className="font-bold text-emerald-400 block mb-1">Step 3: Verification & Fix</span>
-              <p className="text-slate-400 text-[11px] leading-relaxed">Crews complete work on-site, status updates to RESOLVED, and audit logs are recorded permanently.</p>
+            <div className="bg-surface-container p-4 rounded-xl border border-outline/20">
+              <span className="font-headline font-bold text-secondary block mb-1">Step 3: Verification & Fix</span>
+              <p className="text-on-surface-variant text-xs leading-relaxed">Crews complete work on-site, status updates to RESOLVED, and audit logs are recorded permanently.</p>
             </div>
           </div>
         )}
-      </div>
+      </section>
 
-      {/* 5. Filter & Search Bar */}
-      <div className="glass-panel p-4 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-4">
-        {/* Prominent Search Input */}
+      {/* 7. Search & Filter Controls */}
+      <section className="bg-surface-container p-4 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-4 border border-outline/30">
         <div className="relative w-full lg:w-96">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-on-surface-variant absolute left-3.5 top-3" />
           <input
             type="text"
-            placeholder="Search reported issues by title, description, or address..."
+            placeholder="Search reported issues by title, description, or location..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl pl-10 pr-9 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-all"
+            className="w-full bg-surface-dim border border-outline/30 rounded-2xl pl-10 pr-9 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/60 focus:outline-none focus:border-secondary transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-3 text-slate-500 hover:text-slate-200"
+              className="absolute right-3 top-3 text-on-surface-variant hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
           )}
         </div>
 
-        {/* Quick Filter Chips & Dropdowns */}
         <div className="flex flex-wrap items-center gap-3 w-full lg:w-auto justify-end">
-          {/* High Priority Quick Toggle */}
           <button
             onClick={() => setHighPriorityOnly(!highPriorityOnly)}
-            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+            className={`font-label text-xs uppercase tracking-wider px-3.5 py-2 rounded-xl font-bold transition-all ${
               highPriorityOnly
-                ? 'bg-rose-600 text-white shadow-md shadow-rose-600/30'
-                : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+                ? 'bg-primary text-white shadow-[0_0_12px_#ff2d78]'
+                : 'bg-surface-container-high text-on-surface-variant hover:text-white border border-outline/30'
             }`}
           >
-            🔥 High Priority Only
+            🔥 High Priority
           </button>
 
           <CustomDropdown
@@ -365,14 +367,14 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
             className="w-48"
           />
         </div>
-      </div>
+      </section>
 
-      {/* 6. Feed Cards Grid & Empty State */}
-      <div>
+      {/* 8. Feed Cards Grid & Rich Empty State */}
+      <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+          <h2 className="font-headline font-bold text-lg text-on-surface flex items-center space-x-2">
             <span>Reported Civic Issues</span>
-            <span className="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-0.5 rounded-full font-mono font-semibold border border-indigo-500/30">
+            <span className="font-label text-xs bg-secondary/20 text-secondary px-2.5 py-0.5 rounded-full font-bold border border-secondary/30">
               {filteredIssues.length} Reports
             </span>
           </h2>
@@ -381,18 +383,17 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="glass-card rounded-2xl p-6 h-64 animate-pulse"></div>
+              <div key={n} className="bg-surface-container rounded-2xl p-6 h-64 animate-pulse border border-outline/20"></div>
             ))}
           </div>
         ) : filteredIssues.length === 0 ? (
-          /* Rich Empty State */
-          <div className="glass-panel rounded-3xl p-12 text-center text-slate-400 space-y-4 max-w-lg mx-auto my-8 border border-slate-800">
-            <div className="w-16 h-16 rounded-3xl bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center mx-auto text-indigo-400">
-              <ShieldCheck className="w-8 h-8" />
+          <div className="bg-surface-container rounded-3xl p-12 text-center text-on-surface-variant space-y-4 max-w-lg mx-auto my-8 border border-secondary/30 neon-border-secondary">
+            <div className="w-16 h-16 rounded-3xl bg-secondary/20 border border-secondary/40 flex items-center justify-center mx-auto text-secondary">
+              <ShieldCheck className="w-8 h-8 text-secondary neon-text-secondary" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-white">No Issues Matching Filters</h3>
-              <p className="text-xs text-slate-400 mt-1">There are no reported civic hazards matching your current search or status filters.</p>
+              <h3 className="font-headline font-bold text-lg text-on-surface">No Issues Matching Filters</h3>
+              <p className="font-body text-xs text-on-surface-variant mt-1">There are no reported civic hazards matching your current search or status filters.</p>
             </div>
             <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
               <button
@@ -402,15 +403,15 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
                   setSearchQuery('');
                   setHighPriorityOnly(false);
                 }}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold transition-all"
+                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-surface-container-high hover:bg-slate-800 text-on-surface font-bold transition-all"
               >
                 Reset Filters
               </button>
               <button
                 onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
-                className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md shadow-indigo-600/30"
+                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-primary text-white font-bold transition-all shadow-[0_0_12px_#ff2d78] neon-btn-glow"
               >
-                Be the First to Report One
+                Be the First to Report
               </button>
             </div>
           </div>
@@ -426,7 +427,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
             ))}
           </div>
         )}
-      </div>
+      </section>
     </div>
   );
 };

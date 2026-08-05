@@ -1,292 +1,278 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import L from 'leaflet';
-import { RefreshCw, Layers, Navigation } from 'lucide-react';
-import { Issue } from '../types';
+import { Search, Navigation, Compass, ShieldCheck, Radio } from 'lucide-react';
 import { issuesApi, getAttachmentUrl } from '../services/api';
+import { Issue } from '../types';
 
-// Fix default Leaflet marker icon paths broken by bundlers
-const defaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41]
-});
+// Custom Neon Map Marker Icons
+const createNeonIcon = (color: string, glowColor: string) => {
+  return L.divIcon({
+    className: 'custom-neon-pin',
+    html: `<div style="
+      width: 24px;
+      height: 24px;
+      background: #0f0f1a;
+      border: 2px solid ${color};
+      border-radius: 50%;
+      box-shadow: 0 0 14px ${glowColor};
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    ">
+      <div style="width: 8px; height: 8px; background: ${color}; border-radius: 50%;"></div>
+    </div>`,
+    iconSize: [24, 24],
+    iconAnchor: [12, 12],
+    popupAnchor: [0, -12],
+  });
+};
 
-L.Marker.prototype.options.icon = defaultIcon;
+const pinkNeonIcon = createNeonIcon('#ff2d78', 'rgba(255,45,120,0.8)');
+const cyanNeonIcon = createNeonIcon('#00ffcc', 'rgba(0,255,204,0.8)');
+const goldNeonIcon = createNeonIcon('#ffe04a', 'rgba(255,224,74,0.8)');
 
 export const GeoJSONMapView: React.FC = () => {
+  const [issues, setIssues] = useState<Issue[]>([]);
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [userLocation, setUserLocation] = useState<[number, number] | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [mode, setMode] = useState<'all' | 'nearby'>('all');
+
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersGroupRef = useRef<L.LayerGroup | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
 
-  const [center, setCenter] = useState<{ lat: number; lng: number }>({ lat: 12.9632, lng: 80.2380 });
-  const [radiusKm, setRadiusKm] = useState<number>(50);
-  const [fetchAll, setFetchAll] = useState<boolean>(true);
-  const [issuesList, setIssuesList] = useState<Issue[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [userLocationFound, setUserLocationFound] = useState<boolean>(false);
+  const fetchIssues = async () => {
+    try {
+      const res = await issuesApi.list({ limit: 100 });
+      const fetched = res.data.items || [];
+      setIssues(fetched);
+      if (fetched.length > 0) {
+        setSelectedIssue(fetched[0]);
+      }
+    } catch (err) {
+      console.error('Failed to load map points:', err);
+    }
+  };
 
-  // 1. Auto-detect user geolocation on component mount
   useEffect(() => {
-    if ('geolocation' in navigator) {
+    fetchIssues();
+    if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
         (pos) => {
-          setCenter({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          setUserLocationFound(true);
+          const loc: [number, number] = [pos.coords.latitude, pos.coords.longitude];
+          setUserLocation(loc);
         },
-        (err) => {
-          console.log('[GeoMap] Geolocation permission or lookup fallback:', err.message);
-        },
-        { enableHighAccuracy: true, timeout: 8000 }
+        (err) => console.log('Geolocation disabled:', err.message)
       );
     }
   }, []);
 
-  // 2. Fetch issues from API (All issues vs Proximity GeoJSON)
-  const fetchMapData = async () => {
-    setIsLoading(true);
-    try {
-      if (fetchAll) {
-        const res = await issuesApi.list({ limit: 100 });
-        setIssuesList(res.data.items);
-        // If center is default and issues exist, center around the latest issue
-        if (!userLocationFound && res.data.items.length > 0) {
-          const first = res.data.items[0];
-          setCenter({ lat: first.location.latitude, lng: first.location.longitude });
-        }
-      } else {
-        const res = await issuesApi.getNearbyGeoJSON(center.lat, center.lng, radiusKm);
-        const mappedIssues: Issue[] = res.data.features.map((f) => ({
-          id: f.properties.id,
-          title: f.properties.title,
-          description: f.properties.description,
-          status: f.properties.status,
-          priority: f.properties.priority,
-          category_id: f.properties.category_id,
-          assigned_department_id: f.properties.assigned_department_id || '',
-          reporter_id: f.properties.reporter_id || '',
-          location: {
-            latitude: f.geometry.coordinates[1],
-            longitude: f.geometry.coordinates[0],
-            address: f.properties.address || ''
-          },
-          upvote_count: f.properties.upvote_count,
-          created_at: f.properties.created_at || new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          attachments: []
-        }));
-        setIssuesList(mappedIssues);
-      }
-    } catch (err) {
-      console.error('Failed to load map data:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchMapData();
-  }, [fetchAll, radiusKm, center.lat, center.lng]);
-
-  // 3. Initialize & update Leaflet interactive map
+  // Initialize Leaflet Map Instance
   useEffect(() => {
     if (!mapContainerRef.current) return;
-
     if (!mapInstanceRef.current) {
+      const initialCenter: [number, number] = userLocation || [37.7749, -122.4194];
       const map = L.map(mapContainerRef.current, {
-        center: [center.lat, center.lng],
-        zoom: 12,
-        zoomControl: false
+        center: initialCenter,
+        zoom: 13,
+        zoomControl: false,
       });
-
-      L.control.zoom({ position: 'topright' }).addTo(map);
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        attribution: '&copy; <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
-        maxZoom: 19
+        maxZoom: 19,
       }).addTo(map);
 
-      markersGroupRef.current = L.layerGroup().addTo(map);
       mapInstanceRef.current = map;
-    } else {
-      mapInstanceRef.current.setView([center.lat, center.lng]);
     }
-  }, [center]);
+  }, [userLocation]);
 
-  // 4. Render markers on map when issuesList updates
+  // Update Markers
   useEffect(() => {
-    if (!mapInstanceRef.current || !markersGroupRef.current) return;
+    const map = mapInstanceRef.current;
+    if (!map) return;
 
-    markersGroupRef.current.clearLayers();
+    // Clear existing markers
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
 
-    if (issuesList.length === 0) return;
+    const filtered = issues.filter(
+      (i) =>
+        i.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (i.location.address && i.location.address.toLowerCase().includes(searchQuery.toLowerCase()))
+    );
 
-    const bounds = L.latLngBounds([]);
+    filtered.forEach((issue) => {
+      const icon =
+        issue.priority === 'CRITICAL' || issue.priority === 'HIGH'
+          ? pinkNeonIcon
+          : issue.status === 'RESOLVED'
+          ? cyanNeonIcon
+          : goldNeonIcon;
 
-    issuesList.forEach((issue) => {
-      const lat = issue.location.latitude;
-      const lng = issue.location.longitude;
-
-      if (typeof lat !== 'number' || typeof lng !== 'number') return;
-
-      bounds.extend([lat, lng]);
-
-      const statusColor =
-        issue.status === 'RESOLVED' ? '#10b981' :
-        issue.status === 'IN_PROGRESS' ? '#6366f1' :
-        issue.status === 'ACKNOWLEDGED' ? '#3b82f6' :
-        issue.status === 'REJECTED' ? '#f43f5e' : '#f59e0b';
-
-      const customHtmlIcon = L.divIcon({
-        className: 'custom-map-pin',
-        html: `
-          <div style="
-            background-color: ${statusColor};
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            border: 3px solid white;
-            box-shadow: 0 0 15px ${statusColor};
-            display: flex;
-            align-items: center;
-            justify-content: center;
-          ">
-            <div style="width: 6px; height: 6px; background: white; border-radius: 50%;"></div>
-          </div>
-        `,
-        iconSize: [24, 24],
-        iconAnchor: [12, 12]
-      });
-
-      const marker = L.marker([lat, lng], { icon: customHtmlIcon });
-
-      const photoHtml = issue.attachments && issue.attachments.length > 0
-        ? `<div style="margin-top: 8px; max-width: 200px; height: 100px; border-radius: 8px; overflow: hidden; background: #0f172a;">
-            <img src="${getAttachmentUrl(issue.attachments[0].file_path)}" style="width: 100%; height: 100%; object-fit: cover;" />
-           </div>`
-        : '';
+      const marker = L.marker([issue.location.latitude, issue.location.longitude], { icon }).addTo(map);
 
       const popupContent = `
-        <div style="font-family: sans-serif; padding: 4px;">
-          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px;">
-            <span style="font-size: 10px; font-weight: 700; text-transform: uppercase; background: rgba(99, 102, 241, 0.2); color: #818cf8; padding: 2px 6px; border-radius: 4px;">${issue.status}</span>
-            <span style="font-size: 10px; color: #94a3b8;">👍 ${issue.upvote_count} Upvotes</span>
-          </div>
-          <h4 style="font-size: 14px; font-weight: 700; color: #ffffff; margin: 0 0 4px 0;">${issue.title}</h4>
-          <p style="font-size: 12px; color: #cbd5e1; margin: 0 0 8px 0; max-height: 48px; overflow: hidden; text-overflow: ellipsis;">${issue.description}</p>
-          <div style="font-size: 10px; color: #64748b; font-family: monospace;">📍 ${lat.toFixed(4)}, ${lng.toFixed(4)}</div>
-          ${photoHtml}
+        <div style="padding: 4px; color: #e8e0f0;">
+          <span style="font-size: 10px; font-weight: bold; color: #00ffcc; text-transform: uppercase;">
+            ${issue.status} • ${issue.priority}
+          </span>
+          <h4 style="font-size: 14px; font-weight: bold; margin: 4px 0;">${issue.title}</h4>
+          <p style="font-size: 12px; color: #a098b0;">${issue.description}</p>
         </div>
       `;
 
       marker.bindPopup(popupContent);
-      markersGroupRef.current?.addLayer(marker);
+      marker.on('click', () => {
+        setSelectedIssue(issue);
+        map.setView([issue.location.latitude, issue.location.longitude], 15);
+      });
+
+      markersRef.current.push(marker);
     });
 
-    if (bounds.isValid()) {
-      mapInstanceRef.current.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+    if (filtered.length > 0 && mode === 'all') {
+      const bounds = L.latLngBounds(filtered.map((i) => [i.location.latitude, i.location.longitude]));
+      map.fitBounds(bounds, { padding: [50, 50] });
     }
-  }, [issuesList]);
-
-  // Recenter to current user location
-  const handleLocateMe = () => {
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const newCenter = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-          setCenter(newCenter);
-          if (mapInstanceRef.current) {
-            mapInstanceRef.current.setView([newCenter.lat, newCenter.lng], 13);
-          }
-        },
-        (err) => alert('Could not retrieve device location: ' + err.message)
-      );
-    }
-  };
+  }, [issues, searchQuery, mode]);
 
   return (
     <div className="space-y-6">
-      {/* Map Control Bar */}
-      <div className="glass-panel p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
-            <Layers className="w-5 h-5" />
+      {/* Top Header Banner matching Stitch Screen 3 */}
+      <div className="bg-surface-container rounded-3xl p-6 border border-secondary/30 flex flex-wrap items-center justify-between gap-4 shadow-[0_0_20px_rgba(0,255,204,0.1)]">
+        <div>
+          <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-secondary/10 border border-secondary/30 text-secondary font-label text-xs font-bold uppercase tracking-wider mb-2">
+            <Radio className="w-3.5 h-3.5 text-secondary" />
+            <span>Cyberpunk Vector GeoMap</span>
           </div>
-          <div>
-            <h2 className="text-base font-bold text-white">Geospatial Issue Map</h2>
-            <p className="text-xs text-slate-400">Interactive live civic report heat map with real-time location pins</p>
-          </div>
+          <h1 className="font-headline font-bold text-2xl text-on-surface">Neon Live Infrastructure Map</h1>
+          <p className="font-body text-xs text-on-surface-variant mt-1">Real-time geospatial vector stream of reported community hazards & fixes.</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 text-xs">
-          {/* Mode Switcher: All vs Radius */}
-          <div className="flex items-center bg-slate-900/90 rounded-xl border border-slate-800 p-1">
-            <button
-              onClick={() => setFetchAll(true)}
-              className={`px-3 py-1.5 rounded-lg transition-all font-medium ${
-                fetchAll ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              All Reports ({issuesList.length})
-            </button>
-            <button
-              onClick={() => setFetchAll(false)}
-              className={`px-3 py-1.5 rounded-lg transition-all font-medium ${
-                !fetchAll ? 'bg-indigo-600 text-white shadow' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              Nearby Radius
-            </button>
-          </div>
-
-          {!fetchAll && (
-            <div className="flex items-center space-x-2 bg-slate-900 border border-slate-800 px-3 py-1.5 rounded-xl">
-              <span className="text-slate-400">Radius:</span>
-              <input
-                type="number"
-                min={5}
-                max={500}
-                value={radiusKm}
-                onChange={(e) => setRadiusKm(Number(e.target.value))}
-                className="w-14 bg-slate-950 border border-slate-800 rounded px-2 py-0.5 text-white text-center font-mono"
-              />
-              <span className="text-slate-500">km</span>
-            </div>
-          )}
-
+        <div className="flex items-center space-x-2">
           <button
-            onClick={handleLocateMe}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-all font-medium"
-            title="Recenter to my location"
+            onClick={() => {
+              setMode('all');
+              if (mapInstanceRef.current && issues.length > 0) {
+                const bounds = L.latLngBounds(issues.map((i) => [i.location.latitude, i.location.longitude]));
+                mapInstanceRef.current.fitBounds(bounds, { padding: [50, 50] });
+              }
+            }}
+            className={`font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl font-bold transition-all ${
+              mode === 'all'
+                ? 'bg-secondary text-background shadow-[0_0_12px_#00ffcc]'
+                : 'bg-surface-container-high text-on-surface-variant hover:text-white border border-outline/30'
+            }`}
           >
-            <Navigation className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Locate Me</span>
+            All Reports ({issues.length})
           </button>
-
           <button
-            onClick={fetchMapData}
-            disabled={isLoading}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-indigo-600/20 text-indigo-300 border border-indigo-500/30 hover:bg-indigo-600 hover:text-white transition-all font-medium"
+            onClick={() => {
+              if (userLocation && mapInstanceRef.current) {
+                mapInstanceRef.current.setView(userLocation, 15);
+                setMode('nearby');
+              } else {
+                alert('Locating device position...');
+              }
+            }}
+            className={`font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl font-bold transition-all flex items-center space-x-1.5 ${
+              mode === 'nearby'
+                ? 'bg-primary text-white shadow-[0_0_12px_#ff2d78]'
+                : 'bg-surface-container-high text-on-surface-variant hover:text-white border border-outline/30'
+            }`}
           >
-            <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
-            <span>Refresh</span>
+            <Compass className="w-3.5 h-3.5" />
+            <span>Nearby GPS</span>
           </button>
         </div>
       </div>
 
-      {/* Interactive Map Canvas Container */}
-      <div className="glass-panel rounded-3xl p-3 min-h-[480px] h-[520px] relative overflow-hidden flex flex-col">
-        <div ref={mapContainerRef} className="w-full h-full rounded-2xl overflow-hidden shadow-inner" />
+      {/* Main Map Container */}
+      <div className="relative rounded-3xl overflow-hidden border border-secondary/30 h-[600px] shadow-2xl bg-surface-dim">
+        {/* Floating Search Bar matching Stitch Screen 3 */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 w-11/12 max-w-md z-30">
+          <div className="bg-surface-container/90 backdrop-blur-xl border border-secondary/40 rounded-full flex items-center px-4 py-2.5 shadow-[0_0_20px_rgba(0,255,204,0.15)] focus-within:border-secondary transition-all">
+            <Search className="w-4 h-4 text-secondary mr-3 shrink-0" />
+            <input
+              type="text"
+              placeholder="Search address or issue title..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="bg-transparent border-none outline-none text-on-surface placeholder-on-surface-variant/60 w-full font-body text-xs focus:ring-0"
+            />
+            {userLocation && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (mapInstanceRef.current) {
+                    mapInstanceRef.current.setView(userLocation, 15);
+                  }
+                }}
+                className="text-secondary hover:text-primary transition-colors ml-2 p-1"
+                title="Recenter on GPS Location"
+              >
+                <Navigation className="w-4 h-4" />
+              </button>
+            )}
+          </div>
+        </div>
 
-        {isLoading && (
-          <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-sm z-20 flex items-center justify-center">
-            <div className="flex items-center space-x-3 bg-slate-900 px-4 py-2.5 rounded-2xl border border-slate-800 text-slate-200 text-xs font-semibold shadow-xl">
-              <RefreshCw className="w-4 h-4 text-indigo-400 animate-spin" />
-              <span>Loading map pins...</span>
+        {/* Leaflet Map Div */}
+        <div ref={mapContainerRef} className="w-full h-full z-10"></div>
+
+        {/* Floating Bottom Sheet Preview Card matching Stitch Screen 3 */}
+        {selectedIssue && (
+          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 w-11/12 max-w-lg z-30">
+            <div className="bg-surface-container-high/95 backdrop-blur-xl border-t-2 border-primary/50 rounded-2xl p-5 shadow-[0_-10px_30px_rgba(0,0,0,0.7)] flex flex-col gap-3">
+              <div className="w-12 h-1 bg-outline-variant rounded-full mx-auto opacity-50"></div>
+
+              <div className="flex justify-between items-start">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-primary-container/20 border border-primary/30 flex items-center justify-center text-primary shrink-0 shadow-[0_0_12px_rgba(255,45,120,0.4)]">
+                    <ShieldCheck className="w-6 h-6 text-primary neon-text-primary" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded text-[10px] font-label uppercase tracking-widest font-bold bg-primary/20 text-primary border border-primary/30">
+                        {selectedIssue.priority}
+                      </span>
+                      <span className="text-xs font-label text-on-surface-variant font-mono">
+                        ID: {selectedIssue.id.substring(0, 8)}
+                      </span>
+                    </div>
+                    <h3 className="font-headline font-bold text-base text-on-surface mt-0.5 truncate">{selectedIssue.title}</h3>
+                  </div>
+                </div>
+                <span className="text-xs font-label text-secondary neon-text-secondary font-bold shrink-0">
+                  👍 {selectedIssue.upvote_count} Upvotes
+                </span>
+              </div>
+
+              <p className="text-xs font-body text-on-surface-variant line-clamp-2">{selectedIssue.description}</p>
+
+              {selectedIssue.attachments && selectedIssue.attachments.length > 0 && (
+                <img
+                  src={getAttachmentUrl(selectedIssue.attachments[0].file_path)}
+                  alt={selectedIssue.title}
+                  className="w-full h-28 object-cover rounded-xl border border-slate-700"
+                />
+              )}
+
+              <div className="flex gap-3 mt-1">
+                <a
+                  href={`https://www.google.com/maps?q=${selectedIssue.location.latitude},${selectedIssue.location.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex-1 bg-surface border border-secondary/40 text-secondary font-label uppercase tracking-wider text-xs py-2.5 rounded-xl font-bold hover:bg-secondary/10 hover:border-secondary transition-all flex items-center justify-center gap-2"
+                >
+                  <Navigation className="w-3.5 h-3.5" />
+                  <span>Navigate</span>
+                </a>
+              </div>
             </div>
           </div>
         )}
