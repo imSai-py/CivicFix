@@ -69,6 +69,18 @@
   animation: shimmer-sweep 3s infinite linear;
 }
 
+/* Star Pop Animation Keyframes */
+@keyframes star-pop {
+  0% { transform: scale(1) rotate(0deg); }
+  50% { transform: scale(1.45) rotate(15deg); filter: drop-shadow(0 0 20px rgba(255, 224, 74, 1)); }
+  75% { transform: scale(0.9) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+.animate-star-pop {
+  animation: star-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
 .neon-card {
   background: linear-gradient(135deg, rgba(28, 28, 52, 0.9) 0%, rgba(18, 18, 34, 0.95) 100%);
   backdrop-filter: blur(16px);

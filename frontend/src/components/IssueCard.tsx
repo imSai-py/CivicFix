@@ -23,6 +23,8 @@ export const IssueCard: React.FC<IssueCardProps> = ({
 
   // Rating & Reopen Modal States
   const [userRating, setUserRating] = useState<number>(issue.citizen_rating || 0);
+  const [hoverRating, setHoverRating] = useState<number>(0);
+  const [clickedStar, setClickedStar] = useState<number | null>(null);
   const [feedbackText, setFeedbackText] = useState<string>(issue.citizen_feedback || '');
   const [isSubmittingRating, setIsSubmittingRating] = useState(false);
   const [showRatingModal, setShowRatingModal] = useState(false);
@@ -262,27 +264,58 @@ export const IssueCard: React.FC<IssueCardProps> = ({
           <div className="bg-surface-container rounded-3xl border border-tertiary/50 p-6 max-w-md w-full space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-outline/20 pb-3">
               <h3 className="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
-                <Star className="w-5 h-5 text-tertiary fill-tertiary" /> Rate Repair Quality
+                <Star className="w-5 h-5 text-tertiary fill-tertiary animate-pulse" /> Rate Repair Quality
               </h3>
               <button onClick={() => setShowRatingModal(false)} className="text-on-surface-variant hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="space-y-3">
-              <div className="flex justify-center space-x-2 py-2">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    onClick={() => setUserRating(star)}
-                    className={`w-8 h-8 cursor-pointer transition-all ${
-                      userRating >= star
-                        ? 'fill-tertiary text-tertiary scale-110 drop-shadow-[0_0_10px_rgba(255,224,74,0.9)]'
-                        : 'text-outline hover:text-tertiary'
-                    }`}
-                  />
-                ))}
+            <div className="space-y-4">
+              {/* Dynamic Animated Star Selector */}
+              <div className="flex justify-center items-center space-x-2 py-3 bg-surface-dim/60 rounded-2xl border border-outline/20">
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const activeRating = hoverRating || userRating;
+                  const isFilled = activeRating >= star;
+                  const isPopAnim = clickedStar === star;
+
+                  return (
+                    <button
+                      key={star}
+                      type="button"
+                      onMouseEnter={() => setHoverRating(star)}
+                      onMouseLeave={() => setHoverRating(0)}
+                      onClick={() => {
+                        setUserRating(star);
+                        setClickedStar(star);
+                        setTimeout(() => setClickedStar(null), 450);
+                      }}
+                      className={`p-1.5 focus:outline-none transition-transform duration-200 transform ${
+                        isPopAnim ? 'animate-star-pop' : isFilled ? 'scale-110' : 'hover:scale-125'
+                      }`}
+                      title={`${star} Star${star > 1 ? 's' : ''}`}
+                    >
+                      <Star
+                        className={`w-9 h-9 transition-all duration-300 ${
+                          isFilled
+                            ? 'fill-tertiary text-tertiary drop-shadow-[0_0_12px_rgba(255,224,74,0.9)]'
+                            : 'text-outline/40 hover:text-tertiary/70'
+                        }`}
+                      />
+                    </button>
+                  );
+                })}
               </div>
+
+              {/* Dynamic Rating Label */}
+              <p className="text-center font-headline font-bold text-xs uppercase tracking-widest text-tertiary h-5 transition-all">
+                {(hoverRating || userRating) === 1 && '⭐ 1 Star — Incomplete Fix'}
+                {(hoverRating || userRating) === 2 && '⭐⭐ 2 Stars — Fair Work'}
+                {(hoverRating || userRating) === 3 && '⭐⭐⭐ 3 Stars — Good Repair'}
+                {(hoverRating || userRating) === 4 && '⭐⭐⭐⭐ 4 Stars — Very Satisfied!'}
+                {(hoverRating || userRating) === 5 && '⭐⭐⭐⭐⭐ 5 Stars — Outstanding Quality!'}
+                {!(hoverRating || userRating) && 'Hover and click stars to select rating'}
+              </p>
 
               <textarea
                 placeholder="Optional feedback notes for the municipal crew..."
