@@ -39,6 +39,8 @@ class UserRepositoryImpl(UserRepositoryInterface):
             existing_model.role = user.role
             existing_model.phone_number = user.phone_number
             existing_model.is_active = user.is_active
+            existing_model.xp_points = user.xp_points
+            existing_model.reputation_rank = user.reputation_rank
             existing_model.updated_at = user.updated_at
             target_model = existing_model
         else:

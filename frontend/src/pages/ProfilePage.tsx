@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, LogOut, CheckCircle2, AlertCircle, Award, Trophy, Sparkles } from 'lucide-react';
+import { Shield, LogOut, CheckCircle2, AlertCircle, Award, Trophy, Sparkles, Zap, Flame, Star, CheckCircle, FileText } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { authApi } from '../services/api';
 
@@ -75,7 +75,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
           <div>
             <div className="flex items-center space-x-2">
               <h1 className="font-headline font-bold text-2xl text-on-surface">{user.full_name}</h1>
-              <span className="font-label text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-secondary/20 text-secondary border border-secondary/40">
+              <span className="font-label text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-secondary/20 text-secondary border border-secondary/40">
                 {user.role}
               </span>
             </div>
@@ -92,45 +92,97 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
         </button>
       </div>
 
-      {/* CIVIC XP GAMIFICATION BAR */}
-      <div className="neon-card-secondary rounded-3xl p-6 space-y-4 border border-secondary/40 relative overflow-hidden">
-        <div className="flex items-center justify-between flex-wrap gap-2">
-          <div className="flex items-center space-x-3">
-            <div className="p-3 rounded-2xl bg-secondary/20 text-secondary border border-secondary/40 shadow-[0_0_12px_rgba(0,255,204,0.4)]">
-              <Trophy className="w-6 h-6 text-secondary neon-text-secondary animate-pulse" />
+      {/* MAGNIFICENT CYBERPUNK GAMIFICATION XP CARD */}
+      <div className="relative rounded-3xl p-6 overflow-hidden bg-gradient-to-br from-[#121226] via-[#0f172a] to-[#1e1432] border border-[#00ffcc]/50 shadow-[0_0_40px_rgba(0,255,204,0.25)] space-y-6">
+        {/* Ambient Glowing Orbs */}
+        <div className="absolute -top-12 -right-12 w-48 h-48 bg-[#00ffcc]/15 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute -bottom-12 -left-12 w-48 h-48 bg-[#ff2d78]/15 rounded-full blur-3xl pointer-events-none"></div>
+
+        {/* Top Rank Header */}
+        <div className="flex items-center justify-between flex-wrap gap-4 relative z-10">
+          <div className="flex items-center space-x-3.5">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-br from-[#00ffcc]/20 to-[#ff2d78]/20 border border-[#00ffcc]/50 shadow-[0_0_20px_rgba(0,255,204,0.4)] animate-pulse">
+              <Trophy className="w-7 h-7 text-[#ffe04a] drop-shadow-[0_0_10px_rgba(255,224,74,1)]" />
             </div>
             <div>
-              <span className="font-label text-[10px] uppercase font-bold tracking-widest text-secondary block">
-                Civic Reputation & Rank
+              <span className="font-label text-[10px] uppercase font-extrabold tracking-widest text-[#00ffcc] block flex items-center gap-1">
+                <Sparkles className="w-3 h-3 text-[#ffe04a]" /> Civic Reputation & Rank
               </span>
-              <h2 className="font-headline font-black text-xl text-on-surface flex items-center space-x-2">
-                <span>{rank}</span>
-                <Sparkles className="w-4 h-4 text-tertiary neon-text-tertiary" />
+              <h2 className="font-headline font-black text-2xl text-white flex items-center space-x-2 tracking-wide">
+                <span className="bg-gradient-to-r from-white via-slate-100 to-[#ffe04a] bg-clip-text text-transparent">
+                  {rank}
+                </span>
+                <Flame className="w-5 h-5 text-amber-400 fill-amber-400 animate-bounce" />
               </h2>
             </div>
           </div>
 
           <div className="text-right">
-            <div className="font-headline font-black text-2xl text-secondary neon-text-secondary">
-              {xp} <span className="text-xs text-on-surface-variant font-label">XP</span>
+            <div className="font-headline font-black text-3xl text-[#00ffcc] drop-shadow-[0_0_12px_rgba(0,255,204,0.8)]">
+              {xp} <span className="text-sm font-label text-slate-300">XP</span>
             </div>
-            <span className="font-label text-[10px] text-on-surface-variant uppercase font-semibold">
-              +50 XP Earned Per Resolved Fix
+            <span className="font-label text-[10px] uppercase tracking-wider px-2.5 py-1 rounded-full bg-[#00ffcc]/10 text-[#00ffcc] border border-[#00ffcc]/30 font-bold inline-block mt-1">
+              Level {xp >= 500 ? '4 (Max)' : xp >= 200 ? '3' : xp >= 50 ? '2' : '1'}
             </span>
           </div>
         </div>
 
-        {/* Progress Bar to next rank */}
-        <div className="space-y-1.5 pt-2">
-          <div className="flex justify-between text-xs font-label">
-            <span className="text-on-surface-variant">Level Progress</span>
-            <span className="text-secondary font-bold">{xp} / {nextTargetXP} XP</span>
+        {/* Dynamic XP Progress Bar */}
+        <div className="space-y-2 relative z-10 bg-black/40 p-4 rounded-2xl border border-white/10 backdrop-blur-md">
+          <div className="flex justify-between items-center text-xs font-label font-bold">
+            <span className="text-slate-300 uppercase tracking-wider flex items-center gap-1">
+              <Zap className="w-3.5 h-3.5 text-[#ffe04a]" /> Progress to Next Rank
+            </span>
+            <span className="text-[#00ffcc] font-mono text-xs">{xp} / {nextTargetXP} XP ({xpPercent}%)</span>
           </div>
-          <div className="w-full h-3 bg-surface-dim rounded-full overflow-hidden p-0.5 border border-white/10">
+
+          <div className="relative w-full h-4 bg-slate-900 rounded-full overflow-hidden p-0.5 border border-[#00ffcc]/30 shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]">
             <div
-              className="h-full bg-gradient-to-r from-secondary via-[#00ffcc] to-tertiary rounded-full transition-all duration-1000 shadow-[0_0_10px_#00ffcc]"
+              className="h-full bg-gradient-to-r from-[#00ffcc] via-[#ffe04a] to-[#ff2d78] rounded-full transition-all duration-1000 relative shadow-[0_0_15px_#00ffcc]"
               style={{ width: `${xpPercent}%` }}
-            ></div>
+            >
+              {/* Shimmer sweep effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent animate-shimmer-sweep"></div>
+            </div>
+          </div>
+        </div>
+
+        {/* XP Earning Rules / Breakdown Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative z-10 pt-1">
+          <div className="p-3 rounded-2xl bg-black/30 border border-[#00ffcc]/30 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-label font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1">
+                <FileText className="w-3 h-3 text-[#00ffcc]" /> Submit Report
+              </span>
+              <span className="text-[11px] font-headline font-black text-[#00ffcc] bg-[#00ffcc]/10 px-2 py-0.5 rounded-full border border-[#00ffcc]/30">
+                +25 XP
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 font-body">Earned upon creating a verified report</p>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-black/30 border border-emerald-500/30 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-label font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1">
+                <CheckCircle className="w-3 h-3 text-emerald-400" /> Fix Resolved
+              </span>
+              <span className="text-[11px] font-headline font-black text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                +50 XP
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 font-body">Earned when municipal crew fixes issue</p>
+          </div>
+
+          <div className="p-3 rounded-2xl bg-black/30 border border-[#ffe04a]/30 space-y-1">
+            <div className="flex justify-between items-center">
+              <span className="text-[10px] font-label font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1">
+                <Star className="w-3 h-3 text-[#ffe04a] fill-[#ffe04a]" /> Rate Resolution
+              </span>
+              <span className="text-[11px] font-headline font-black text-[#ffe04a] bg-[#ffe04a]/10 px-2 py-0.5 rounded-full border border-[#ffe04a]/30">
+                +25 XP
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-400 font-body">Earned when rating quality feedback</p>
           </div>
         </div>
       </div>

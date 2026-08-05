@@ -66,6 +66,12 @@ class CreateIssueUseCase:
 
             saved_issue = await self.uow.issues.save(issue)
 
+            # Award +25 XP to reporter for submitting a civic issue report
+            reporter = await self.uow.users.get_by_id(reporter_id)
+            if reporter:
+                reporter.add_xp(25)
+                await self.uow.users.save(reporter)
+
             # Record initial audit log
             audit = IssueAuditLog(
                 issue_id=saved_issue.id,
@@ -504,6 +510,13 @@ class RateIssueUseCase:
             issue.citizen_rating = rating
             issue.citizen_feedback = feedback_notes
             saved = await self.uow.issues.save(issue)
+
+            # Award +25 XP for providing citizen feedback
+            reporter = await self.uow.users.get_by_id(user_id)
+            if reporter:
+                reporter.add_xp(25)
+                await self.uow.users.save(reporter)
+
             await self.uow.commit()
             return CreateIssueUseCase._map_to_dto(saved)
 
