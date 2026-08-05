@@ -3,6 +3,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import { Footer } from './components/Footer';
+import { LandingPage } from './pages/LandingPage';
 import { FeedPage } from './pages/FeedPage';
 import { ActivityFeedPage } from './pages/ActivityFeedPage';
 import { LoginPage } from './pages/LoginPage';
@@ -35,10 +36,18 @@ const MainLayout: React.FC = () => {
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {activeTab === 'home' && (
-            <FeedPage
-              isAuthenticated={isAuthenticated}
-              onNavigate={(tab) => setActiveTab(tab)}
-            />
+            isAuthenticated ? (
+              <FeedPage
+                isAuthenticated={isAuthenticated}
+                onNavigate={(tab) => setActiveTab(tab)}
+              />
+            ) : (
+              <LandingPage
+                onGetStarted={() => setActiveTab('register')}
+                onExploreMap={() => setActiveTab('map')}
+                onSignIn={() => setActiveTab('login')}
+              />
+            )
           )}
           {activeTab === 'map' && <GeoJSONMapView />}
           {activeTab === 'report' && (
