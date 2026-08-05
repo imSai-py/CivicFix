@@ -24,7 +24,7 @@ import { useAuth } from '../context/AuthContext';
 
 interface FeedPageProps {
   isAuthenticated: boolean;
-  onNavigate?: (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => void;
+  onNavigate?: (tab: 'home' | 'map' | 'report' | 'activity' | 'profile' | 'admin' | 'login' | 'register') => void;
 }
 
 export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate }) => {
@@ -81,7 +81,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
   const resolvedCount = issues.filter((i) => i.status === 'RESOLVED').length;
   const inProgressCount = issues.filter((i) => i.status === 'IN_PROGRESS' || i.status === 'ACKNOWLEDGED').length;
 
-  const navigateTo = (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => {
+  const navigateTo = (tab: 'home' | 'map' | 'report' | 'activity' | 'profile' | 'admin' | 'login' | 'register') => {
     if (onNavigate) onNavigate(tab);
   };
 
@@ -188,7 +188,7 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
             return (
               <div
                 key={issue.id}
-                onClick={() => navigateTo('feed')}
+                onClick={() => navigateTo('activity')}
                 className="min-w-[280px] max-w-[300px] snap-center bg-surface-container-high/60 backdrop-blur-md rounded-xl border border-surface-variant p-4 flex flex-col justify-between gap-3 group hover:border-secondary/50 transition-colors cursor-pointer"
               >
                 <div>

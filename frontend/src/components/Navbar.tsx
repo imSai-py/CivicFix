@@ -1,10 +1,10 @@
 import React from 'react';
-import { Shield, MapPin, User as UserIcon, FilePlus, LayoutDashboard } from 'lucide-react';
+import { Shield, MapPin, User as UserIcon, FilePlus, LayoutDashboard, MessageSquare } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 interface NavbarProps {
-  activeTab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register';
-  setActiveTab: (tab: 'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register') => void;
+  activeTab: 'home' | 'map' | 'report' | 'activity' | 'profile' | 'admin' | 'login' | 'register';
+  setActiveTab: (tab: 'home' | 'map' | 'report' | 'activity' | 'profile' | 'admin' | 'login' | 'register') => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
@@ -15,7 +15,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
     <header className="sticky top-0 z-50 bg-surface/90 backdrop-blur-md border-b border-primary/30 shadow-[inset_0_0_12px_rgba(255,45,120,0.1)] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand Logo matching Stitch Screen 2 */}
-        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('feed')}>
+        <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setActiveTab('home')}>
           <div className="w-10 h-10 rounded-xl bg-surface-container border border-primary/40 flex items-center justify-center shadow-[0_0_12px_rgba(255,45,120,0.3)]">
             <Shield className="w-6 h-6 text-primary drop-shadow-[0_0_8px_rgba(255,45,120,0.8)]" />
           </div>
@@ -29,12 +29,12 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           </div>
         </div>
 
-        {/* Center Navigation Tabs matching Stitch Design System */}
+        {/* Center Navigation Tabs matching Stitch 5 Screens */}
         <nav className="hidden md:flex items-center space-x-1 bg-surface-container p-1.5 rounded-xl border border-secondary/30">
           <button
-            onClick={() => setActiveTab('feed')}
+            onClick={() => setActiveTab('home')}
             className={`font-label text-xs uppercase tracking-wider px-4 py-1.5 rounded-lg font-bold transition-all ${
-              activeTab === 'feed'
+              activeTab === 'home'
                 ? 'bg-secondary text-background shadow-[0_0_12px_#00ffcc]'
                 : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
             }`}
@@ -64,6 +64,18 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
           >
             <FilePlus className="w-3.5 h-3.5" />
             <span>Report</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('activity')}
+            className={`flex items-center space-x-1.5 font-label text-xs uppercase tracking-wider px-4 py-1.5 rounded-lg font-bold transition-all ${
+              activeTab === 'activity'
+                ? 'bg-secondary text-background shadow-[0_0_12px_#00ffcc]'
+                : 'text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5" />
+            <span>Feed</span>
           </button>
 
           {isOfficialOrAdmin && (

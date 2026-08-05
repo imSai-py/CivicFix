@@ -4,6 +4,7 @@ import { Navbar } from './components/Navbar';
 import { BottomNav } from './components/BottomNav';
 import { Footer } from './components/Footer';
 import { FeedPage } from './pages/FeedPage';
+import { ActivityFeedPage } from './pages/ActivityFeedPage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { ProfilePage } from './pages/ProfilePage';
@@ -14,18 +15,18 @@ import { UserRole } from './types';
 
 const MainLayout: React.FC = () => {
   const { isAuthenticated } = useAuth();
-  const [activeTab, setActiveTab] = useState<'feed' | 'map' | 'report' | 'admin' | 'profile' | 'login' | 'register'>('feed');
+  const [activeTab, setActiveTab] = useState<'home' | 'map' | 'report' | 'activity' | 'profile' | 'admin' | 'login' | 'register'>('home');
 
   const handleLoginSuccess = (role?: UserRole) => {
     if (role === 'OFFICIAL' || role === 'ADMIN') {
       setActiveTab('admin');
     } else {
-      setActiveTab('feed');
+      setActiveTab('home');
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-between bg-slate-950 text-slate-100 selection:bg-indigo-500 selection:text-white pb-16 md:pb-0">
+    <div className="min-h-screen flex flex-col justify-between bg-background text-on-surface selection:bg-primary selection:text-white pb-20 md:pb-0">
       <div>
         <Navbar
           activeTab={activeTab}
@@ -33,7 +34,7 @@ const MainLayout: React.FC = () => {
         />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {activeTab === 'feed' && (
+          {activeTab === 'home' && (
             <FeedPage
               isAuthenticated={isAuthenticated}
               onNavigate={(tab) => setActiveTab(tab)}
@@ -43,10 +44,11 @@ const MainLayout: React.FC = () => {
           {activeTab === 'report' && (
             <ReportPage
               isAuthenticated={isAuthenticated}
-              onSuccessNavigate={() => setActiveTab('feed')}
+              onSuccessNavigate={() => setActiveTab('home')}
               onSwitchToLogin={() => setActiveTab('login')}
             />
           )}
+          {activeTab === 'activity' && <ActivityFeedPage />}
           {activeTab === 'admin' && <AdminDashboardPage />}
           {activeTab === 'profile' && <ProfilePage onSwitchToLogin={() => setActiveTab('login')} />}
           {activeTab === 'login' && (
