@@ -4,7 +4,7 @@ import {
   ShieldCheck,
   Tag,
   ListFilter,
-  FilePlus,
+  Megaphone,
   MapPin,
   CheckCircle2,
   Sparkles,
@@ -157,15 +157,17 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         </div>
       </section>
 
-      {/* 3. Main Action CTA Button - Hot Pink Neon Pill */}
+      {/* 3. Main Action CTA Button matching EXACT second image from Stitch Screen 2 */}
       <section>
         <button
           onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
-          className="w-full bg-gradient-to-r from-[#ff2d78] via-[#e0005a] to-[#ff2d78] text-white rounded-full py-4.5 px-8 flex items-center justify-center space-x-3 shadow-[0_0_30px_rgba(255,45,120,0.6)] hover:shadow-[0_0_45px_rgba(255,45,120,0.9)] hover:scale-[1.01] active:scale-95 transition-all duration-300 font-headline font-black text-lg tracking-wide group"
+          className="w-full bg-surface-container-high/90 border-2 border-primary/50 text-on-surface rounded-2xl py-4.5 px-6 flex items-center justify-center space-x-3 neon-btn-glow hover:border-primary active:scale-95 transition-all duration-300 group relative overflow-hidden shadow-[inset_0_0_15px_rgba(255,45,120,0.1),0_0_20px_rgba(255,45,120,0.25)]"
         >
-          <FilePlus className="w-6 h-6 text-white group-hover:scale-110 transition-transform duration-300" />
-          <span>Report an Issue Now</span>
-          <ArrowRight className="w-5 h-5 text-white group-hover:translate-x-1 transition-transform" />
+          <div className="absolute inset-0 bg-primary/10 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+          <Megaphone className="w-6 h-6 text-primary neon-text-primary group-hover:scale-110 transition-transform duration-300" />
+          <span className="font-headline font-bold text-lg text-on-surface tracking-wide relative z-10 group-hover:neon-text-primary">
+            Report an Issue
+          </span>
         </button>
       </section>
 
