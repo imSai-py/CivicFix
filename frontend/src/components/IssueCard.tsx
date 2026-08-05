@@ -202,20 +202,25 @@ export const IssueCard: React.FC<IssueCardProps> = ({
           {isResolved && isReporter && (
             <div className="mt-4 pt-3 border-t border-secondary/30 flex flex-wrap items-center justify-between gap-2">
               <div className="flex items-center space-x-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <Star
-                    key={star}
-                    onClick={() => {
-                      setUserRating(star);
-                      setShowRatingModal(true);
-                    }}
-                    className={`w-4 h-4 cursor-pointer transition-all ${
-                      (issue.citizen_rating || userRating) >= star
-                        ? 'fill-tertiary text-tertiary drop-shadow-[0_0_6px_rgba(255,224,74,0.8)]'
-                        : 'text-outline hover:text-tertiary'
-                    }`}
-                  />
-                ))}
+                {[1, 2, 3, 4, 5].map((star) => {
+                  const isFilled = (issue.citizen_rating || userRating) >= star;
+                  return (
+                    <Star
+                      key={star}
+                      fill={isFilled ? "#ffe04a" : "none"}
+                      color={isFilled ? "#ffe04a" : "#475569"}
+                      onClick={() => {
+                        setUserRating(star);
+                        setShowRatingModal(true);
+                      }}
+                      className={`w-4 h-4 cursor-pointer transition-all ${
+                        isFilled
+                          ? 'drop-shadow-[0_0_8px_rgba(255,224,74,0.9)] scale-110'
+                          : 'hover:scale-125'
+                      }`}
+                    />
+                  );
+                })}
                 <span className="font-label text-[11px] font-bold text-tertiary ml-1">
                   {issue.citizen_rating ? `${issue.citizen_rating}★ Rated` : 'Rate Fix'}
                 </span>
@@ -264,7 +269,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({
           <div className="bg-surface-container rounded-3xl border border-tertiary/50 p-6 max-w-md w-full space-y-4 shadow-2xl">
             <div className="flex justify-between items-center border-b border-outline/20 pb-3">
               <h3 className="font-headline font-bold text-lg text-on-surface flex items-center gap-2">
-                <Star className="w-5 h-5 text-tertiary fill-tertiary animate-pulse" /> Rate Repair Quality
+                <Star fill="#ffe04a" color="#ffe04a" className="w-5 h-5 animate-pulse" /> Rate Repair Quality
               </h3>
               <button onClick={() => setShowRatingModal(false)} className="text-on-surface-variant hover:text-white">
                 <X className="w-5 h-5" />
@@ -273,7 +278,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({
 
             <div className="space-y-4">
               {/* Dynamic Animated Star Selector */}
-              <div className="flex justify-center items-center space-x-2 py-3 bg-surface-dim/60 rounded-2xl border border-outline/20">
+              <div className="flex justify-center items-center space-x-2 py-3 bg-[#0c0c18] rounded-2xl border border-tertiary/30 shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)]">
                 {[1, 2, 3, 4, 5].map((star) => {
                   const activeRating = hoverRating || userRating;
                   const isFilled = activeRating >= star;
@@ -296,10 +301,12 @@ export const IssueCard: React.FC<IssueCardProps> = ({
                       title={`${star} Star${star > 1 ? 's' : ''}`}
                     >
                       <Star
+                        fill={isFilled ? "#ffe04a" : "none"}
+                        color={isFilled ? "#ffe04a" : "#475569"}
                         className={`w-9 h-9 transition-all duration-300 ${
                           isFilled
-                            ? 'fill-tertiary text-tertiary drop-shadow-[0_0_12px_rgba(255,224,74,0.9)]'
-                            : 'text-outline/40 hover:text-tertiary/70'
+                            ? 'drop-shadow-[0_0_16px_rgba(255,224,74,1)]'
+                            : 'hover:color-[#ffe04a]'
                         }`}
                       />
                     </button>
@@ -317,18 +324,31 @@ export const IssueCard: React.FC<IssueCardProps> = ({
                 {!(hoverRating || userRating) && 'Hover and click stars to select rating'}
               </p>
 
-              <textarea
-                placeholder="Optional feedback notes for the municipal crew..."
-                value={feedbackText}
-                onChange={(e) => setFeedbackText(e.target.value)}
-                className="w-full bg-surface-dim border border-outline/30 rounded-xl p-3 text-sm text-on-surface focus:outline-none focus:border-tertiary"
-                rows={3}
-              />
+              {/* Dynamic Animated Feedback Textarea */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center text-[11px] font-label font-bold">
+                  <span className="text-tertiary">Feedback Notes (Optional)</span>
+                  <span className="text-on-surface-variant font-mono text-[10px]">
+                    {feedbackText.length}/500
+                  </span>
+                </div>
+
+                <div className="relative">
+                  <textarea
+                    maxLength={500}
+                    placeholder="Enter optional feedback notes for the municipal repair crew..."
+                    value={feedbackText}
+                    onChange={(e) => setFeedbackText(e.target.value)}
+                    className="w-full bg-[#0c0c18] border border-tertiary/40 focus:border-tertiary rounded-2xl p-3.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-tertiary/40 shadow-[inset_0_2px_10px_rgba(0,0,0,0.8)] focus:shadow-[0_0_20px_rgba(255,224,74,0.25)] transition-all duration-300 resize-none"
+                    rows={3}
+                  />
+                </div>
+              </div>
 
               <button
                 onClick={handleRateSubmit}
                 disabled={isSubmittingRating || !userRating}
-                className="w-full py-3 rounded-xl bg-tertiary text-background font-headline font-bold text-sm uppercase tracking-wider hover:opacity-90 transition-all shadow-[0_0_15px_rgba(255,224,74,0.5)] disabled:opacity-50"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#ffe04a] to-[#ffb700] text-slate-950 font-headline font-black text-xs uppercase tracking-wider hover:opacity-95 transition-all shadow-[0_0_25px_rgba(255,224,74,0.6)] hover:shadow-[0_0_35px_rgba(255,224,74,0.9)] hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isSubmittingRating ? 'Submitting Rating...' : 'Submit Citizen Rating (+50 XP Earned)'}
               </button>
