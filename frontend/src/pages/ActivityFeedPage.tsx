@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { ThumbsUp, MessageSquare, Share2, History, CheckCircle2, Clock, Filter, User, Send, X, Check } from 'lucide-react';
+import { ThumbsUp, MessageSquare, Share2, History, CheckCircle2, Clock, Filter, User, Send, X, Check, RefreshCw, Search, ListFilter } from 'lucide-react';
 import { issuesApi, getAttachmentUrl } from '../services/api';
 import { Issue } from '../types';
 import { useAuth } from '../context/AuthContext';
@@ -16,6 +16,12 @@ export const ActivityFeedPage: React.FC = () => {
   const { user, isAuthenticated } = useAuth();
   const [issues, setIssues] = useState<Issue[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
+
+  // Filter & Search Controls
+  const [showFilterBar, setShowFilterBar] = useState<boolean>(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
   // Upvote Animations State
   const [animatingIssueId, setAnimatingIssueId] = useState<string | null>(null);
@@ -51,6 +57,12 @@ export const ActivityFeedPage: React.FC = () => {
     }
   };
 
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchFeed();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
+
   useEffect(() => {
     fetchFeed();
 
@@ -72,7 +84,6 @@ export const ActivityFeedPage: React.FC = () => {
 
   const getCommentsForIssue = (issueId: string): CommentItem[] => {
     if (commentsMap[issueId]) return commentsMap[issueId];
-    // Default seed comments if none exist
     return [
       {
         id: `seed-1-${issueId}`,
@@ -95,7 +106,6 @@ export const ActivityFeedPage: React.FC = () => {
     e.stopPropagation();
     if (!isAuthenticated || upvotedIds[issueId]) return;
 
-    // Trigger Pop & Particle Animations
     setAnimatingIssueId(issueId);
     setFloatingPlusId(issueId);
     setUpvotedIds((prev) => ({ ...prev, [issueId]: true }));
@@ -125,7 +135,7 @@ export const ActivityFeedPage: React.FC = () => {
         await navigator.share(shareData);
         return;
       } catch (err) {
-        // Fallback to clipboard
+        // Fallback
       }
     }
 
@@ -161,6 +171,16 @@ export const ActivityFeedPage: React.FC = () => {
     setNewCommentText('');
   };
 
+  // Filter issues based on status and search query
+  const filteredIssues = issues.filter((issue) => {
+    const matchesStatus = selectedStatus ? issue.status === selectedStatus : true;
+    const matchesSearch = searchQuery
+      ? issue.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        issue.description.toLowerCase().includes(searchQuery.toLowerCase())
+      : true;
+    return matchesStatus && matchesSearch;
+  });
+
   return (
     <div className="max-w-3xl mx-auto space-y-8 my-4 relative">
       {/* Toast Notification */}
@@ -171,22 +191,97 @@ export const ActivityFeedPage: React.FC = () => {
         </div>
       )}
 
-      {/* Header matching Stitch Screen 4 */}
+      {/* Header with Filter Toggle and Refresh Button */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-headline text-2xl md:text-3xl font-bold text-white neon-text-primary">Live Activity Stream</h2>
           <p className="font-label text-xs text-slate-400 uppercase tracking-widest mt-1">
-            Municipal Operations Sector • {issues.length} Active Reports
+            Municipal Operations Sector • {filteredIssues.length} Reports Shown
           </p>
         </div>
-        <button
-          onClick={fetchFeed}
-          className="h-10 w-10 rounded-2xl bg-[#101222] border border-[#1b1e36] flex items-center justify-center text-slate-300 hover:text-[#00ffcc] hover:border-[#00ffcc]/50 transition-all active:scale-95 shadow-[0_0_12px_rgba(0,255,204,0.2)]"
-          title="Filter / Refresh Feed"
-        >
-          <Filter className="w-4 h-4 text-[#00ffcc]" />
-        </button>
+
+        <div className="flex items-center space-x-2">
+          {/* Toggle Filter Bar */}
+          <button
+            onClick={() => setShowFilterBar(!showFilterBar)}
+            className={`h-10 px-3.5 rounded-2xl border flex items-center space-x-2 font-label text-xs uppercase font-bold transition-all ${
+              showFilterBar || selectedStatus || searchQuery
+                ? 'bg-[#00ffcc] text-slate-950 border-[#00ffcc] shadow-[0_0_15px_#00ffcc]'
+                : 'bg-[#101222] border-[#1b1e36] text-slate-300 hover:text-[#00ffcc] hover:border-[#00ffcc]/50'
+            }`}
+            title="Toggle Filter Options"
+          >
+            <Filter className="w-4 h-4" />
+            <span className="hidden sm:inline">Filter</span>
+          </button>
+
+          {/* Dedicated Refresh Button */}
+          <button
+            onClick={handleManualRefresh}
+            disabled={isRefreshing}
+            className="h-10 w-10 rounded-2xl bg-[#101222] border border-[#1b1e36] flex items-center justify-center text-slate-300 hover:text-[#00ffcc] hover:border-[#00ffcc]/50 transition-all active:scale-95 shadow-[0_0_12px_rgba(0,255,204,0.2)] disabled:opacity-50"
+            title="Refresh Feed"
+          >
+            <RefreshCw className={`w-4 h-4 text-[#00ffcc] ${isRefreshing ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
       </div>
+
+      {/* EXPANDABLE FILTER TOOLBAR */}
+      {showFilterBar && (
+        <div className="bg-[#0e101d] p-4 rounded-2xl border border-[#00ffcc]/40 space-y-3 shadow-[0_0_25px_rgba(0,255,204,0.15)] animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="flex items-center justify-between">
+            <span className="font-label text-xs uppercase font-bold text-[#00ffcc] flex items-center gap-1.5">
+              <ListFilter className="w-4 h-4 text-[#00ffcc]" /> Filter Activity Stream
+            </span>
+            {(selectedStatus || searchQuery) && (
+              <button
+                onClick={() => {
+                  setSelectedStatus('');
+                  setSearchQuery('');
+                }}
+                className="font-label text-[10px] uppercase font-bold text-slate-400 hover:text-white underline"
+              >
+                Reset Filters
+              </button>
+            )}
+          </div>
+
+          {/* Search Bar Input */}
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
+            <input
+              type="text"
+              placeholder="Search feed reports by keywords..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#141629] border border-[#232745] rounded-xl pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffcc] transition-all"
+            />
+          </div>
+
+          {/* Status Quick Pills */}
+          <div className="flex flex-wrap gap-2 pt-1">
+            {[
+              { label: 'All Reports', value: '' },
+              { label: 'Submitted', value: 'SUBMITTED' },
+              { label: 'In Progress', value: 'IN_PROGRESS' },
+              { label: 'Resolved', value: 'RESOLVED' },
+            ].map((st) => (
+              <button
+                key={st.value}
+                onClick={() => setSelectedStatus(st.value)}
+                className={`font-label text-xs uppercase tracking-wider px-3.5 py-1.5 rounded-xl font-bold transition-all ${
+                  selectedStatus === st.value
+                    ? 'bg-[#00ffcc] text-slate-950 shadow-[0_0_12px_#00ffcc]'
+                    : 'bg-[#141629] text-slate-300 hover:text-white border border-[#232745]'
+                }`}
+              >
+                {st.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-6">
@@ -194,14 +289,23 @@ export const ActivityFeedPage: React.FC = () => {
             <div key={n} className="bg-[#0e101d] rounded-2xl h-96 animate-pulse border border-[#1b1e34]"></div>
           ))}
         </div>
-      ) : issues.length === 0 ? (
-        <div className="bg-[#0e101d] rounded-3xl p-12 text-center text-slate-400 space-y-2 border border-[#00ffcc]/30">
-          <p className="font-headline font-bold text-lg text-white">No Activity Reports Found</p>
-          <p className="font-body text-xs">Be the first to submit a community hazard report.</p>
+      ) : filteredIssues.length === 0 ? (
+        <div className="bg-[#0e101d] rounded-3xl p-12 text-center text-slate-400 space-y-3 border border-[#00ffcc]/30">
+          <p className="font-headline font-bold text-lg text-white">No Matching Reports Found</p>
+          <p className="font-body text-xs text-slate-400">Try adjusting your filter options or search terms.</p>
+          <button
+            onClick={() => {
+              setSelectedStatus('');
+              setSearchQuery('');
+            }}
+            className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-[#00ffcc] text-slate-950 font-bold shadow-[0_0_15px_#00ffcc] mt-2 inline-block"
+          >
+            Show All Activity
+          </button>
         </div>
       ) : (
         <div className="space-y-6">
-          {issues.map((issue) => {
+          {filteredIssues.map((issue) => {
             const hasPhoto = issue.attachments && issue.attachments.length > 0;
             const isResolved = issue.status === 'RESOLVED';
             const issueComments = getCommentsForIssue(issue.id);
@@ -346,7 +450,7 @@ export const ActivityFeedPage: React.FC = () => {
 
       {/* DYNAMIC COMMENTS MODAL / DRAWER */}
       {activeCommentIssue && (
-        <div className="fixed inset-0 z-50 bg-background/90 backdrop-blur-xl flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-[#090a14]/90 backdrop-blur-xl flex items-center justify-center p-4">
           <div className="bg-[#0e101d] rounded-3xl border border-[#00ffcc]/40 p-6 max-w-lg w-full space-y-4 shadow-[0_0_40px_rgba(0,255,204,0.25)] flex flex-col max-h-[85vh]">
             {/* Modal Header */}
             <div className="flex justify-between items-center border-b border-[#1b1e34] pb-3 shrink-0">
