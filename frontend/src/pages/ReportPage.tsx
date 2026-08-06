@@ -113,25 +113,27 @@ export const ReportPage: React.FC<ReportPageProps> = ({
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 my-6">
+    <div className="max-w-2xl mx-auto space-y-8 my-6 px-1 sm:px-0">
       {/* Step Header matching Stitch Screen 4 */}
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
-          <h1 className="font-headline text-3xl font-bold text-on-surface">Report Issue</h1>
-          <span className="font-label text-sm text-secondary neon-text-secondary tracking-widest uppercase font-bold">Step 01 // 03</span>
+          <h1 className="font-headline text-3xl font-bold text-white">Report Issue</h1>
+          <span className="font-label text-xs text-[#00ffcc] tracking-widest uppercase font-bold px-3 py-1 rounded-full bg-[#00ffcc]/10 border border-[#00ffcc]/30 shadow-[0_0_12px_#00ffcc]">
+            Step 01 // 03
+          </span>
         </div>
-        <p className="font-body text-on-surface-variant text-sm">Document the problem to help us route it to the right department.</p>
+        <p className="font-body text-slate-400 text-sm">Document the problem to help us route it to the right department.</p>
       </section>
 
       {errorMessage && (
-        <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center space-x-2">
+        <div className="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center space-x-2">
           <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
           <span>{errorMessage}</span>
         </div>
       )}
 
       {successMessage && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center space-x-2">
+        <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center space-x-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{successMessage}</span>
         </div>
@@ -140,9 +142,9 @@ export const ReportPage: React.FC<ReportPageProps> = ({
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* 1. Evidence Photo Dropzone matching Stitch Screen 4 */}
         <section className="flex flex-col gap-3">
-          <h2 className="font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold">Evidence</h2>
+          <h2 className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold">Evidence</h2>
           {previewUrl ? (
-            <div className="relative w-full h-48 rounded-xl overflow-hidden border border-secondary/40 bg-surface-dim">
+            <div className="relative w-full h-48 rounded-2xl overflow-hidden border border-[#00ffcc]/40 bg-slate-950">
               <img src={previewUrl} alt="Preview" className="w-full h-full object-cover" />
               <button
                 type="button"
@@ -150,20 +152,20 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                   setFile(null);
                   setPreviewUrl(null);
                 }}
-                className="absolute top-3 right-3 p-1.5 rounded-xl bg-background/80 text-on-surface hover:text-rose-400 transition-colors"
+                className="absolute top-3 right-3 p-1.5 rounded-xl bg-slate-950/80 text-white hover:text-rose-400 transition-colors border border-slate-700"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
           ) : (
-            <label className="w-full h-48 rounded-xl bg-surface-container flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-300 hover:bg-surface-container-high neon-border-primary group">
+            <label className="w-full h-48 rounded-2xl bg-[#0e101d] flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-300 hover:bg-[#141629] border border-[#ff2d78]/50 hover:border-[#ff2d78] shadow-[0_0_20px_rgba(255,45,120,0.15)] group">
               <input type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                <Camera className="w-8 h-8 text-primary neon-text-primary" />
+              <div className="w-16 h-16 rounded-full bg-[#ff2d78]/15 border border-[#ff2d78]/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(255,45,120,0.4)]">
+                <Camera className="w-8 h-8 text-[#ff2d78]" />
               </div>
               <div className="flex flex-col items-center">
-                <span className="font-headline font-semibold text-on-surface text-sm">Snap a Photo</span>
-                <span className="font-body text-xs text-on-surface-variant mt-0.5">Or select from gallery</span>
+                <span className="font-headline font-semibold text-white text-sm">Snap a Photo</span>
+                <span className="font-body text-xs text-slate-400 mt-0.5">Or select from gallery</span>
               </div>
             </label>
           )}
@@ -171,7 +173,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
 
         {/* 2. Classification Cards matching Stitch Screen 4 */}
         <section className="flex flex-col gap-3">
-          <h2 className="font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold">Classification</h2>
+          <h2 className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold">Classification</h2>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             {categories.map((c) => {
               const isSelected = categoryId === c.id;
@@ -180,18 +182,18 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                   key={c.id}
                   type="button"
                   onClick={() => setCategoryId(c.id)}
-                  className={`p-4 rounded-xl flex flex-col items-start gap-3 transition-all active:scale-95 text-left ${
+                  className={`p-4 rounded-2xl flex flex-col items-start gap-3 transition-all active:scale-95 text-left ${
                     isSelected
-                      ? 'bg-surface-container neon-border-secondary border-secondary/50 shadow-[inset_0_0_12px_rgba(0,255,204,0.1)]'
-                      : 'bg-surface-container border border-outline/30 hover:border-secondary/30 hover:bg-surface-container-high'
+                      ? 'bg-[#0e101d] border border-[#00ffcc] text-[#00ffcc] shadow-[0_0_15px_rgba(0,255,204,0.3)]'
+                      : 'bg-[#0e101d] border border-[#1b1e34] text-slate-300 hover:border-[#00ffcc]/40 hover:bg-[#141629]'
                   }`}
                 >
                   <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
-                    isSelected ? 'bg-secondary/20 text-secondary' : 'bg-surface-variant text-on-surface-variant'
+                    isSelected ? 'bg-[#00ffcc]/20 text-[#00ffcc]' : 'bg-[#171a2e] text-slate-400'
                   }`}>
                     <Sparkles className="w-4 h-4" />
                   </div>
-                  <span className="font-headline font-semibold text-on-surface text-xs line-clamp-1">{c.name}</span>
+                  <span className="font-headline font-semibold text-xs line-clamp-1">{c.name}</span>
                 </button>
               );
             })}
@@ -201,41 +203,41 @@ export const ReportPage: React.FC<ReportPageProps> = ({
         {/* 3. Issue Title & Description */}
         <section className="space-y-4">
           <div>
-            <label className="block font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">Issue Title *</label>
+            <label className="block font-label text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">Issue Title *</label>
             <input
               type="text"
               required
               placeholder="e.g. Broken Streetlight on 5th Ave"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-surface-container border border-outline/30 rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/60 focus:outline-none focus:border-secondary transition-all"
+              className="w-full bg-[#141629] border border-[#232745] rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffcc] transition-all"
             />
           </div>
 
           <div>
-            <label className="block font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">Description *</label>
+            <label className="block font-label text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">Description *</label>
             <textarea
               rows={3}
               required
               placeholder="Describe the hazard details..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-surface-container border border-outline/30 rounded-xl px-4 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/60 focus:outline-none focus:border-secondary transition-all"
+              className="w-full bg-[#141629] border border-[#232745] rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffcc] transition-all"
             />
           </div>
         </section>
 
         {/* 4. Location Context matching Stitch Screen 4 */}
         <section className="flex flex-col gap-3">
-          <h2 className="font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold">Location Context</h2>
-          <div className="bg-surface-container border border-outline/30 rounded-xl p-4 flex items-center justify-between">
+          <h2 className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold">Location Context</h2>
+          <div className="bg-[#0e101d] border border-[#1b1e34] rounded-2xl p-4 flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-secondary/20 text-secondary flex items-center justify-center">
-                <MapPin className="w-5 h-5 text-secondary neon-text-secondary" />
+              <div className="w-10 h-10 rounded-full bg-[#00ffcc]/15 border border-[#00ffcc]/30 text-[#00ffcc] flex items-center justify-center">
+                <MapPin className="w-5 h-5 text-[#00ffcc]" />
               </div>
               <div>
-                <span className="font-headline font-semibold text-sm text-on-surface block">GPS Coordinates</span>
-                <span className="font-body text-xs text-on-surface-variant">
+                <span className="font-headline font-semibold text-sm text-white block">GPS Coordinates</span>
+                <span className="font-body text-xs text-slate-400">
                   {latitude && longitude ? `${latitude.toFixed(4)}, ${longitude.toFixed(4)}` : 'Detecting position...'}
                 </span>
               </div>
@@ -245,7 +247,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
               placeholder="Enter custom address..."
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              className="w-48 bg-surface-dim border border-outline/30 rounded-lg px-3 py-1.5 text-xs text-on-surface focus:outline-none focus:border-secondary"
+              className="w-full sm:w-48 bg-[#141629] border border-[#232745] rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffcc]"
             />
           </div>
         </section>
@@ -255,10 +257,10 @@ export const ReportPage: React.FC<ReportPageProps> = ({
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-surface-container border border-primary/50 text-primary font-headline font-bold text-lg py-4 rounded-xl flex items-center justify-center gap-2 neon-btn-glow transition-all active:scale-95 group hover:border-primary"
+            className="w-full bg-[#1e0f24] border-2 border-[#ff2d78] text-white font-headline font-bold text-lg py-4 rounded-2xl flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,45,120,0.4)] hover:shadow-[0_0_35px_rgba(255,45,120,0.7)] transition-all active:scale-95 group cursor-pointer"
           >
-            <span className="neon-text-primary">{isSubmitting ? 'Submitting...' : 'Proceed & Submit Report'}</span>
-            <ArrowRight className="w-5 h-5 text-primary group-hover:translate-x-1 transition-transform" />
+            <span>{isSubmitting ? 'Submitting...' : 'Proceed & Submit Report'}</span>
+            <ArrowRight className="w-5 h-5 text-[#ff2d78] group-hover:translate-x-1 transition-transform" />
           </button>
         </section>
       </form>

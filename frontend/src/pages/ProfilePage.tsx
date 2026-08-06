@@ -23,13 +23,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="max-w-md mx-auto my-12 bg-surface-container rounded-3xl p-8 text-center space-y-4 border border-secondary/30 neon-border-secondary">
-        <Shield className="w-12 h-12 text-secondary mx-auto neon-text-secondary" />
-        <h2 className="font-headline font-bold text-xl text-on-surface">Authentication Required</h2>
-        <p className="font-body text-xs text-on-surface-variant">Log in to view your profile and manage issue submissions.</p>
+      <div className="max-w-md mx-auto my-12 bg-[#0e101d] rounded-3xl p-8 text-center space-y-4 border border-[#00ffcc]/30 shadow-[0_0_25px_rgba(0,255,204,0.2)]">
+        <Shield className="w-12 h-12 text-[#00ffcc] mx-auto neon-text-secondary" />
+        <h2 className="font-headline font-bold text-xl text-white">Authentication Required</h2>
+        <p className="font-body text-xs text-slate-400">Log in to view your profile and manage issue submissions.</p>
         <button
           onClick={onSwitchToLogin}
-          className="font-label text-xs uppercase tracking-wider px-6 py-3 rounded-xl bg-primary text-white font-bold transition-all shadow-[0_0_15px_rgba(255,45,120,0.4)] neon-btn-glow"
+          className="font-label text-xs uppercase tracking-wider px-6 py-3 rounded-2xl bg-[#ff2d78] text-white font-bold transition-all shadow-[0_0_15px_#ff2d78]"
         >
           Sign In Now
         </button>
@@ -85,9 +85,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
   const avatarSrc = user.avatar_url ? getAttachmentUrl(user.avatar_url) : null;
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 my-6">
+    <div className="max-w-3xl mx-auto space-y-8 my-6 px-1 sm:px-0">
       {/* Profile Header with Interactive Avatar Upload */}
-      <div className="bg-surface-container rounded-3xl p-6 border border-secondary/30 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_0_20px_rgba(0,255,204,0.1)]">
+      <div className="bg-[#0e101d] rounded-3xl p-6 border border-[#00ffcc]/30 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_0_20px_rgba(0,255,204,0.15)]">
         <div className="flex items-center space-x-5">
           {/* Avatar Container with Camera Trigger Badge */}
           <div className="relative group/avatar">
@@ -95,10 +95,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
               <img
                 src={avatarSrc}
                 alt={user.full_name}
-                className="w-20 h-20 rounded-2xl object-cover border-2 border-secondary shadow-[0_0_20px_rgba(0,255,204,0.4)] group-hover/avatar:scale-105 transition-transform duration-300"
+                className="w-20 h-20 rounded-2xl object-cover border-2 border-[#00ffcc] shadow-[0_0_20px_rgba(0,255,204,0.4)] group-hover/avatar:scale-105 transition-transform duration-300"
               />
             ) : (
-              <div className="w-20 h-20 rounded-2xl bg-surface-dim border-2 border-primary flex items-center justify-center text-primary text-3xl font-headline font-bold shadow-[0_0_20px_rgba(255,45,120,0.6)] group-hover/avatar:scale-105 transition-transform duration-300">
+              <div className="w-20 h-20 rounded-2xl bg-[#141629] border-2 border-[#ff2d78] flex items-center justify-center text-[#ff2d78] text-3xl font-headline font-bold shadow-[0_0_20px_rgba(255,45,120,0.6)] group-hover/avatar:scale-105 transition-transform duration-300">
                 {user.full_name.charAt(0).toUpperCase()}
               </div>
             )}
@@ -108,7 +108,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={isUploadingAvatar}
-              className="absolute -bottom-1.5 -right-1.5 p-2 rounded-xl bg-primary text-white border border-white/20 shadow-[0_0_12px_rgba(255,45,120,0.8)] hover:scale-110 active:scale-95 transition-all hover:bg-secondary hover:text-slate-950"
+              className="absolute -bottom-1.5 -right-1.5 p-2 rounded-xl bg-[#ff2d78] text-white border border-white/20 shadow-[0_0_12px_rgba(255,45,120,0.8)] hover:scale-110 active:scale-95 transition-all hover:bg-[#00ffcc] hover:text-slate-950"
               title="Upload / Change Profile Avatar Photo"
             >
               {isUploadingAvatar ? (
@@ -129,16 +129,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
 
           <div>
             <div className="flex items-center space-x-2 flex-wrap gap-y-1">
-              <h1 className="font-headline font-bold text-2xl text-on-surface">{user.full_name}</h1>
-              <span className="font-label text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-secondary/20 text-secondary border border-secondary/40">
+              <h1 className="font-headline font-bold text-2xl text-white">{user.full_name}</h1>
+              <span className="font-label text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#00ffcc]/20 text-[#00ffcc] border border-[#00ffcc]/40">
                 {user.role}
               </span>
             </div>
-            <p className="font-body text-xs text-on-surface-variant mt-0.5">{user.email}</p>
+            <p className="font-body text-xs text-slate-400 mt-0.5">{user.email}</p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="font-label text-[10px] text-secondary hover:underline uppercase tracking-wider font-bold mt-1 inline-flex items-center gap-1"
+              className="font-label text-[10px] text-[#00ffcc] hover:underline uppercase tracking-wider font-bold mt-1 inline-flex items-center gap-1"
             >
               <Camera className="w-3 h-3" /> Change Profile Picture
             </button>
@@ -147,7 +147,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
 
         <button
           onClick={logout}
-          className="flex items-center space-x-2 font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl bg-surface-container-high hover:bg-rose-500/20 text-rose-400 border border-outline/30 hover:border-rose-500/40 transition-all font-bold"
+          className="flex items-center space-x-2 font-label text-xs uppercase tracking-wider px-4 py-2.5 rounded-xl bg-[#141629] hover:bg-rose-500/20 text-rose-400 border border-[#232745] hover:border-rose-500/40 transition-all font-bold"
         >
           <LogOut className="w-4 h-4" />
           <span>Sign Out</span>
@@ -250,13 +250,13 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
       </div>
 
       {/* Tab Switcher */}
-      <div className="flex border-b border-outline/30 font-label text-xs uppercase tracking-wider font-bold">
+      <div className="flex border-b border-[#1b1e34] font-label text-xs uppercase tracking-wider font-bold">
         <button
           onClick={() => setActiveTab('info')}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === 'info'
-              ? 'border-secondary text-secondary neon-text-secondary'
-              : 'border-transparent text-on-surface-variant hover:text-on-surface'
+              ? 'border-[#00ffcc] text-[#00ffcc] neon-text-secondary'
+              : 'border-transparent text-slate-400 hover:text-white'
           }`}
         >
           Personal Details
@@ -265,8 +265,8 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
           onClick={() => setActiveTab('security')}
           className={`pb-3 px-4 border-b-2 transition-all ${
             activeTab === 'security'
-              ? 'border-primary text-primary neon-text-primary'
-              : 'border-transparent text-on-surface-variant hover:text-on-surface'
+              ? 'border-[#ff2d78] text-[#ff2d78] neon-text-primary'
+              : 'border-transparent text-slate-400 hover:text-white'
           }`}
         >
           Security & Password
@@ -276,25 +276,25 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
       {/* Tab Content */}
       {activeTab === 'info' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="bg-surface-container rounded-2xl p-5 border border-outline/20 space-y-2">
-            <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold block">Account Status</span>
+          <div className="bg-[#0e101d] rounded-2xl p-5 border border-[#1b1e34] space-y-2">
+            <span className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold block">Account Status</span>
             <div className="flex items-center space-x-2 text-emerald-400 font-headline font-bold text-sm">
               <CheckCircle2 className="w-4 h-4 text-emerald-400" />
               <span>Verified Citizen Profile</span>
             </div>
           </div>
 
-          <div className="bg-surface-container rounded-2xl p-5 border border-outline/20 space-y-2">
-            <span className="font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold block">Impact Contributions</span>
-            <div className="flex items-center space-x-2 text-secondary font-headline font-bold text-sm">
-              <Award className="w-4 h-4 text-secondary" />
+          <div className="bg-[#0e101d] rounded-2xl p-5 border border-[#1b1e34] space-y-2">
+            <span className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold block">Impact Contributions</span>
+            <div className="flex items-center space-x-2 text-[#00ffcc] font-headline font-bold text-sm">
+              <Award className="w-4 h-4 text-[#00ffcc]" />
               <span>{rank}</span>
             </div>
           </div>
         </div>
       ) : (
-        <div className="bg-surface-container rounded-3xl p-6 border border-primary/30 space-y-4 max-w-md">
-          <h3 className="font-headline font-bold text-lg text-on-surface">Change Password</h3>
+        <div className="bg-[#0e101d] rounded-3xl p-6 border border-[#ff2d78]/30 space-y-4 max-w-md shadow-2xl">
+          <h3 className="font-headline font-bold text-lg text-white">Change Password</h3>
 
           {passwordMessage && (
             <div
@@ -315,42 +315,42 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
 
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
-              <label className="block font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">Current Password</label>
+              <label className="block font-label text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">Current Password</label>
               <input
                 type="password"
                 required
                 value={oldPassword}
                 onChange={(e) => setOldPassword(e.target.value)}
-                className="w-full bg-surface-dim border border-outline/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-secondary"
+                className="w-full bg-[#141629] border border-[#232745] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00ffcc]"
               />
             </div>
 
             <div>
-              <label className="block font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">New Password</label>
+              <label className="block font-label text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">New Password</label>
               <input
                 type="password"
                 required
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
-                className="w-full bg-surface-dim border border-outline/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-secondary"
+                className="w-full bg-[#141629] border border-[#232745] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00ffcc]"
               />
             </div>
 
             <div>
-              <label className="block font-label text-xs uppercase tracking-wider text-on-surface-variant font-bold mb-1">Confirm New Password</label>
+              <label className="block font-label text-xs uppercase tracking-wider text-slate-400 font-bold mb-1">Confirm New Password</label>
               <input
                 type="password"
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full bg-surface-dim border border-outline/30 rounded-xl px-4 py-2.5 text-sm text-on-surface focus:outline-none focus:border-secondary"
+                className="w-full bg-[#141629] border border-[#232745] rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00ffcc]"
               />
             </div>
 
             <button
               type="submit"
               disabled={isUpdatingPassword}
-              className="w-full py-3 rounded-xl bg-primary text-white font-label text-xs uppercase tracking-wider font-bold transition-all shadow-[0_0_15px_rgba(255,45,120,0.4)] neon-btn-glow"
+              className="w-full py-3 rounded-xl bg-[#ff2d78] text-white font-label text-xs uppercase tracking-wider font-bold transition-all shadow-[0_0_15px_#ff2d78]"
             >
               {isUpdatingPassword ? 'Updating...' : 'Update Password'}
             </button>

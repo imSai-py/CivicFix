@@ -31,7 +31,6 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
         }
       }).catch(console.error);
 
-      // Attempt browser geolocation API
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
@@ -65,7 +64,6 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
       });
       onSuccess();
       onClose();
-      // Reset
       setTitle('');
       setDescription('');
     } catch (err: any) {
@@ -76,8 +74,8 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fade-in">
-      <div className="glass-panel w-full max-w-xl rounded-3xl p-6 shadow-2xl border border-slate-700/80 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-xl animate-fade-in">
+      <div className="bg-[#0e101d] w-full max-w-xl rounded-3xl p-6 shadow-[0_0_40px_rgba(0,255,204,0.25)] border border-[#00ffcc]/40 relative space-y-4">
         <button
           onClick={onClose}
           className="absolute top-5 right-5 text-slate-400 hover:text-white p-1 rounded-xl hover:bg-slate-800 transition-colors"
@@ -85,11 +83,13 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-xl font-bold text-white mb-1">Report Civic Infrastructure Issue</h2>
-        <p className="text-xs text-slate-400 mb-6">Submit non-emergency municipal reports directly to city departments.</p>
+        <div>
+          <h2 className="text-xl font-bold text-white font-headline">Report Civic Infrastructure Issue</h2>
+          <p className="text-xs text-slate-400 font-body">Submit non-emergency municipal reports directly to city departments.</p>
+        </div>
 
         {errorMessage && (
-          <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs flex items-center space-x-2">
+          <div className="p-3.5 rounded-2xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center space-x-2">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{errorMessage}</span>
           </div>
@@ -97,7 +97,7 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Issue Title *</label>
+            <label className="block text-xs font-label uppercase font-bold text-slate-300 mb-1">Issue Title *</label>
             <input
               type="text"
               required
@@ -106,20 +106,20 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
               placeholder="e.g. Dangerous Pothole on 5th Avenue"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              className="w-full bg-[#141629] border border-[#232745] rounded-2xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffcc] transition-all"
             />
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Category *</label>
+              <label className="block text-xs font-label uppercase font-bold text-slate-300 mb-1">Category *</label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all"
+                className="w-full bg-[#141629] border border-[#232745] rounded-2xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00ffcc] transition-all"
               >
                 {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
+                  <option key={c.id} value={c.id} className="bg-[#141629] text-white">
                     {c.name}
                   </option>
                 ))}
@@ -127,22 +127,22 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-slate-300 mb-1">Urgency Priority</label>
+              <label className="block text-xs font-label uppercase font-bold text-slate-300 mb-1">Urgency Priority</label>
               <select
                 value={priority}
                 onChange={(e) => setPriority(e.target.value as IssuePriority)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500 transition-all"
+                className="w-full bg-[#141629] border border-[#232745] rounded-2xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-[#00ffcc] transition-all"
               >
-                <option value="LOW">Low</option>
-                <option value="MEDIUM">Medium</option>
-                <option value="HIGH">High</option>
-                <option value="CRITICAL">Critical</option>
+                <option value="LOW" className="bg-[#141629] text-white">Low</option>
+                <option value="MEDIUM" className="bg-[#141629] text-white">Medium</option>
+                <option value="HIGH" className="bg-[#141629] text-white">High</option>
+                <option value="CRITICAL" className="bg-[#141629] text-white">Critical</option>
               </select>
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-slate-300 mb-1">Problem Description *</label>
+            <label className="block text-xs font-label uppercase font-bold text-slate-300 mb-1">Problem Description *</label>
             <textarea
               required
               rows={3}
@@ -151,51 +151,51 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
               placeholder="Provide specific details about the infrastructure problem..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all"
+              className="w-full bg-[#141629] border border-[#232745] rounded-2xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffcc] transition-all"
             />
           </div>
 
           {/* Location Inputs */}
-          <div className="p-3.5 rounded-2xl bg-slate-900/60 border border-slate-800 space-y-3">
-            <div className="flex items-center space-x-2 text-xs font-medium text-indigo-400">
-              <MapPin className="w-4 h-4" />
+          <div className="p-4 rounded-2xl bg-[#141629] border border-[#232745] space-y-3">
+            <div className="flex items-center space-x-2 text-xs font-label font-bold text-[#00ffcc]">
+              <MapPin className="w-4 h-4 text-[#00ffcc]" />
               <span>Location Coordinates</span>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-[11px] text-slate-400 mb-0.5">Latitude</label>
+                <label className="block text-[11px] font-label text-slate-400 mb-0.5">Latitude</label>
                 <input
                   type="number"
                   step="any"
                   required
                   value={latitude}
                   onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white"
+                  className="w-full bg-[#0c0c18] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
                 />
               </div>
 
               <div>
-                <label className="block text-[11px] text-slate-400 mb-0.5">Longitude</label>
+                <label className="block text-[11px] font-label text-slate-400 mb-0.5">Longitude</label>
                 <input
                   type="number"
                   step="any"
                   required
                   value={longitude}
                   onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white"
+                  className="w-full bg-[#0c0c18] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-[11px] text-slate-400 mb-0.5">Physical Address (Optional)</label>
+              <label className="block text-[11px] font-label text-slate-400 mb-0.5">Physical Address (Optional)</label>
               <input
                 type="text"
                 placeholder="742 Evergreen Terrace, Market St"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-600"
+                className="w-full bg-[#0c0c18] border border-slate-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-slate-500"
               />
             </div>
           </div>
@@ -204,16 +204,16 @@ export const CreateIssueModal: React.FC<CreateIssueModalProps> = ({ isOpen, onCl
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition-colors"
+              className="px-4 py-2 rounded-xl text-xs font-label uppercase font-bold text-slate-400 hover:text-white transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={isSubmitting}
-              className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs transition-all shadow-lg shadow-indigo-600/30 disabled:opacity-50"
+              className="flex items-center space-x-2 px-5 py-2.5 rounded-2xl bg-[#ff2d78] text-white font-label font-bold text-xs uppercase tracking-wider hover:opacity-90 transition-all shadow-[0_0_15px_#ff2d78] disabled:opacity-50"
             >
-              <Send className="w-4 h-4" />
+              <Send className="w-4 h-4 text-white" />
               <span>{isSubmitting ? 'Submitting...' : 'Submit Report'}</span>
             </button>
           </div>
