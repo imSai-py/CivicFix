@@ -102,7 +102,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({
 
   return (
     <>
-      <div className="bg-surface-container rounded-2xl p-5 border border-outline/20 hover:border-secondary/50 transition-all duration-300 flex flex-col justify-between space-y-4 group hover:shadow-[0_0_20px_rgba(0,255,204,0.15)] relative overflow-hidden">
+      <div className="bg-[#0e101d] rounded-2xl p-5 border border-[#1b1e34] hover:border-[#00ffcc]/50 transition-all duration-300 flex flex-col justify-between space-y-4 group hover:shadow-[0_0_20px_rgba(0,255,204,0.15)] relative overflow-hidden">
         {/* Header & Badges */}
         <div>
           <div className="flex items-center justify-between gap-2 mb-3">

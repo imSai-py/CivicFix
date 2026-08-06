@@ -10,7 +10,7 @@ import {
   Sparkles,
   ChevronDown,
   ChevronUp,
-  Layers,
+  FileText,
   Zap,
   X,
   Radio,
@@ -108,13 +108,13 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
   const formattedResolved = resolvedCount < 10 ? `0${resolvedCount}` : `${resolvedCount}`;
 
   return (
-    <div className="space-y-8 max-w-4xl mx-auto">
-      {/* 1. Greeting Header matching Stitch Screen 2 */}
+    <div className="space-y-8 max-w-4xl mx-auto px-1 sm:px-0">
+      {/* 1. Greeting Header matching EXACT Stitch Screen 2 */}
       <section className="space-y-1">
-        <h2 className="font-headline font-bold text-3xl md:text-4xl text-on-surface tracking-tight">
+        <h2 className="font-headline font-bold text-3xl md:text-4xl text-white tracking-tight">
           Good evening, <span className="text-[#00ffcc] neon-text-secondary font-bold">{firstName}</span>.
         </h2>
-        <p className="font-label text-xs text-on-surface-variant uppercase tracking-widest opacity-80">
+        <p className="font-label text-xs text-slate-400 uppercase tracking-widest">
           NEO-TOKYO SECTOR 4 • 21:45 PM
         </p>
       </section>
@@ -122,55 +122,52 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       {/* 2. Quick Stats Bento Grid matching EXACT Stitch Screen 2 */}
       <section className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
-          {/* Stat 1: Reported */}
-          <div className="bg-surface-container rounded-xl p-5 border border-secondary/50 shadow-[inset_0_0_12px_rgba(0,255,204,0.1)] flex flex-col justify-between h-36 group hover:bg-surface-container-high transition-colors duration-300 relative overflow-hidden">
-            <div className="absolute -right-4 -top-4 w-16 h-16 bg-secondary/10 rounded-full blur-xl group-hover:bg-secondary/20 transition-all"></div>
-            <div className="flex items-center space-x-2 text-secondary">
-              <Layers className="w-5 h-5 text-secondary" />
-              <span className="font-label text-xs uppercase tracking-wider font-bold">REPORTED</span>
+          {/* Stat 1: Reported (Cyan Neon Border & Accent) */}
+          <div className="bg-[#0c1520] rounded-2xl p-5 border border-[#00ffcc]/40 shadow-[0_0_15px_rgba(0,255,204,0.15)] flex flex-col justify-between h-36 relative overflow-hidden group">
+            <div className="flex items-center space-x-2 text-[#00ffcc]">
+              <FileText className="w-5 h-5 text-[#00ffcc]" />
+              <span className="font-label text-xs uppercase tracking-wider font-bold text-[#00ffcc]">REPORTED</span>
             </div>
-            <div className="font-headline font-bold text-4xl mt-2 text-on-surface">
+            <div className="font-headline font-bold text-4xl text-white">
               {formattedReported}
             </div>
           </div>
 
-          {/* Stat 2: Resolved */}
-          <div className="bg-surface-container rounded-xl p-5 border border-surface-variant flex flex-col justify-between h-36 group hover:bg-surface-container-high transition-colors duration-300">
-            <div className="flex items-center space-x-2 text-on-surface-variant group-hover:text-tertiary transition-colors">
-              <CheckCircle2 className="w-5 h-5" />
-              <span className="font-label text-xs uppercase tracking-wider font-bold">RESOLVED</span>
+          {/* Stat 2: Resolved (Subtle Indigo Glass & Purple Title) */}
+          <div className="bg-[#121224] rounded-2xl p-5 border border-[#252542] flex flex-col justify-between h-36 relative overflow-hidden group">
+            <div className="flex items-center space-x-2 text-[#8b8ba7]">
+              <CheckCircle2 className="w-5 h-5 text-[#8b8ba7]" />
+              <span className="font-label text-xs uppercase tracking-wider font-bold text-[#8b8ba7]">RESOLVED</span>
             </div>
-            <div className="font-headline font-bold text-4xl mt-2 text-on-surface">
+            <div className="font-headline font-bold text-4xl text-white">
               {formattedResolved}
             </div>
           </div>
         </div>
 
-        {/* Stat 3: Grid Status (Spans Full Width Below) */}
-        <div className="bg-surface-container rounded-xl p-5 border border-primary/30 shadow-[inset_0_0_20px_rgba(255,45,120,0.05)] flex items-center justify-between relative overflow-hidden group">
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        {/* Stat 3: Grid Status (Maroon/Pink Tinted Glass) */}
+        <div className="bg-[#1a0f1d] rounded-2xl p-5 border border-[#ff2d78]/30 shadow-[0_0_20px_rgba(255,45,120,0.15)] flex items-center justify-between relative overflow-hidden group">
           <div>
-            <h3 className="font-label text-xs uppercase tracking-wider text-primary mb-1 font-bold">CITY GRID STATUS</h3>
-            <p className="font-headline font-semibold text-lg text-on-surface">Stable • {inProgressCount} Active Fixes</p>
+            <h3 className="font-label text-xs uppercase tracking-wider text-[#ff2d78] mb-1 font-bold">CITY GRID STATUS</h3>
+            <p className="font-headline font-bold text-lg text-white">Stable • {inProgressCount} Active Fixes</p>
           </div>
-          <div className="w-12 h-12 rounded-full border-2 border-primary/40 bg-surface-container-high flex items-center justify-center neon-text-primary">
-            <Zap className="w-6 h-6 text-primary" />
+          <div className="w-11 h-11 rounded-xl bg-[#281128] border border-[#ff2d78]/40 flex items-center justify-center text-[#ff2d78] shadow-[0_0_12px_rgba(255,45,120,0.4)]">
+            <Zap className="w-5 h-5 text-[#ff2d78] fill-[#ff2d78]" />
           </div>
         </div>
       </section>
 
-      {/* 3. Main Action CTA Button matching EXACT Stitch Screen 2 (Animated Pulsing Neon & Wiggle Icon) */}
+      {/* 3. Main Action CTA Button matching EXACT Stitch Screen 2 */}
       <section>
         <button
           onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
-          className="w-full bg-surface-container-high/90 border-2 border-primary/60 text-on-surface rounded-2xl py-4.5 px-6 flex items-center justify-center space-x-3 animate-cta-glow hover:border-primary active:scale-95 transition-all duration-300 group relative overflow-hidden cursor-pointer"
+          className="w-full bg-[#1e0f24] border-2 border-[#ff2d78] text-white rounded-2xl py-4 px-6 flex items-center justify-center space-x-3 shadow-[0_0_25px_rgba(255,45,120,0.35)] hover:shadow-[0_0_35px_rgba(255,45,120,0.7)] active:scale-95 transition-all duration-300 group cursor-pointer relative overflow-hidden"
         >
           {/* Shimmer Sweep Animation */}
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent -translate-x-full animate-shimmer-sweep pointer-events-none"></div>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#ff2d78]/20 to-transparent -translate-x-full animate-shimmer-sweep pointer-events-none"></div>
 
-          {/* Icon with hover rotation animation */}
-          <Megaphone className="w-6 h-6 text-primary neon-text-primary group-hover:rotate-12 group-hover:scale-125 transition-transform duration-300" />
-          <span className="font-headline font-bold text-lg text-on-surface tracking-wide relative z-10 group-hover:neon-text-primary transition-all">
+          <Megaphone className="w-6 h-6 text-[#ff2d78] fill-[#ff2d78] group-hover:rotate-12 transition-transform duration-300" />
+          <span className="font-headline font-bold text-lg text-white tracking-wide relative z-10">
             Report an Issue
           </span>
         </button>
@@ -179,13 +176,15 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       {/* 4. Happening Nearby Horizontal Snap-Scroll Stream */}
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-headline font-bold text-xl text-on-surface flex items-center">
-            <Radio className="w-5 h-5 text-secondary mr-2" />
+          <h3 className="font-headline font-bold text-xl text-white flex items-center space-x-2">
+            <div className="w-7 h-7 rounded-lg bg-[#00ffcc]/15 border border-[#00ffcc]/30 flex items-center justify-center text-[#00ffcc] shadow-[0_0_10px_rgba(0,255,204,0.3)]">
+              <Radio className="w-4 h-4 text-[#00ffcc] animate-pulse" />
+            </div>
             <span>Happening Nearby</span>
           </h3>
           <button
             onClick={() => navigateTo('map')}
-            className="text-secondary font-label text-xs uppercase tracking-wider hover:neon-text-secondary transition-all font-bold"
+            className="text-[#00ffcc] font-label text-xs uppercase tracking-wider hover:underline font-bold"
           >
             VIEW MAP
           </button>
@@ -198,37 +197,37 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
               <div
                 key={issue.id}
                 onClick={() => navigateTo('activity')}
-                className="min-w-[280px] max-w-[300px] snap-center bg-surface-container-high/60 backdrop-blur-md rounded-xl border border-surface-variant p-4 flex flex-col justify-between gap-3 group hover:border-tertiary/50 transition-colors cursor-pointer"
+                className="min-w-[280px] max-w-[300px] snap-center bg-[#0e101d] rounded-2xl border border-[#1b1e34] p-4 flex flex-col justify-between gap-3 group hover:border-[#00ffcc]/50 transition-colors cursor-pointer shadow-lg"
               >
                 <div>
                   <div className="flex justify-between items-start mb-2">
-                    <span className={`font-label text-[10px] uppercase px-2 py-0.5 rounded-sm tracking-wider font-bold ${
-                      issue.status === 'RESOLVED' ? 'bg-emerald-500/20 text-emerald-300' :
-                      issue.status === 'IN_PROGRESS' ? 'bg-tertiary/20 text-tertiary' : 'bg-secondary/20 text-secondary'
+                    <span className={`font-label text-[10px] uppercase px-2.5 py-0.5 rounded font-bold tracking-wider ${
+                      issue.status === 'RESOLVED' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40' :
+                      issue.status === 'IN_PROGRESS' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40' : 'bg-[#00ffcc]/20 text-[#00ffcc] border border-[#00ffcc]/40'
                     }`}>
                       {issue.status}
                     </span>
-                    <span className="text-on-surface-variant text-xs">
+                    <span className="text-slate-400 text-xs font-mono">
                       {new Date(issue.created_at).toLocaleDateString()}
                     </span>
                   </div>
 
                   {hasPhoto && (
-                    <div className="w-full h-32 rounded-lg bg-surface-dim overflow-hidden relative border border-white/5 mb-2">
+                    <div className="w-full h-32 rounded-xl bg-slate-900 overflow-hidden relative border border-slate-800 mb-2">
                       <img
                         src={getAttachmentUrl(issue.attachments[0].file_path)}
                         alt={issue.title}
-                        className="object-cover w-full h-full opacity-80 group-hover:scale-105 transition-transform duration-500"
+                        className="object-cover w-full h-full opacity-90 group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                   )}
 
-                  <h4 className="font-headline font-semibold text-sm mb-1 text-on-surface truncate">{issue.title}</h4>
-                  <p className="font-body text-xs text-on-surface-variant line-clamp-2">{issue.description}</p>
+                  <h4 className="font-headline font-semibold text-sm mb-1 text-white truncate">{issue.title}</h4>
+                  <p className="font-body text-xs text-slate-400 line-clamp-2">{issue.description}</p>
                 </div>
 
-                <div className="flex items-center text-xs text-on-surface-variant font-body pt-2 border-t border-slate-800">
-                  <MapPin className="w-3.5 h-3.5 text-secondary mr-1 shrink-0" />
+                <div className="flex items-center text-xs text-slate-400 font-body pt-2 border-t border-slate-800/80">
+                  <MapPin className="w-3.5 h-3.5 text-[#00ffcc] mr-1 shrink-0" />
                   <span className="truncate">{issue.location.address || `${issue.location.latitude.toFixed(3)}, ${issue.location.longitude.toFixed(3)}`}</span>
                 </div>
               </div>
@@ -237,26 +236,26 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
 
           <div
             onClick={() => navigateTo('map')}
-            className="min-w-[200px] snap-center bg-surface-container-high/60 backdrop-blur-md rounded-xl border border-surface-variant p-4 flex flex-col items-center justify-center group hover:border-secondary/50 transition-colors cursor-pointer"
+            className="min-w-[200px] snap-center bg-[#0e101d] rounded-2xl border border-[#1b1e34] p-4 flex flex-col items-center justify-center group hover:border-[#00ffcc]/50 transition-colors cursor-pointer shadow-lg"
           >
-            <div className="w-12 h-12 rounded-full bg-surface-variant flex items-center justify-center mb-2 group-hover:bg-primary/20 group-hover:text-primary transition-colors text-on-surface-variant">
+            <div className="w-12 h-12 rounded-full bg-[#171a2e] flex items-center justify-center mb-2 group-hover:bg-[#00ffcc]/20 group-hover:text-[#00ffcc] transition-colors text-slate-400">
               <ArrowRight className="w-6 h-6" />
             </div>
-            <span className="font-label text-xs uppercase tracking-widest text-on-surface-variant group-hover:text-on-surface transition-colors font-bold">View All</span>
+            <span className="font-label text-xs uppercase tracking-widest text-slate-300 group-hover:text-[#00ffcc] transition-colors font-bold">View All</span>
           </div>
         </div>
       </section>
 
       {/* 5. Clickable Category Quick-Filter Strip */}
-      <section className="bg-surface-container p-5 rounded-2xl border border-secondary/30 space-y-3 shadow-xl">
-        <span className="font-label text-xs font-bold text-on-surface-variant uppercase tracking-wider block">Browse Issues By Category</span>
+      <section className="bg-[#0e101d] p-5 rounded-2xl border border-[#1b1e34] space-y-3 shadow-xl">
+        <span className="font-label text-xs font-bold text-slate-400 uppercase tracking-wider block">Browse Issues By Category</span>
         <div className="flex flex-wrap gap-2">
           <button
             onClick={() => setSelectedCategory('')}
             className={`font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl font-bold transition-all ${
               selectedCategory === ''
-                ? 'bg-secondary text-background shadow-[0_0_15px_#00ffcc]'
-                : 'bg-surface-container-high text-on-surface-variant hover:text-white border border-outline/30'
+                ? 'bg-[#00ffcc] text-slate-950 shadow-[0_0_15px_#00ffcc]'
+                : 'bg-[#15172a] text-slate-300 hover:text-white border border-[#232745]'
             }`}
           >
             🌟 All Categories
@@ -277,8 +276,8 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
                 onClick={() => setSelectedCategory(isSelected ? '' : c.id)}
                 className={`font-headline text-xs px-3.5 py-2 rounded-xl font-semibold transition-all flex items-center space-x-2 ${
                   isSelected
-                    ? 'bg-primary text-white shadow-[0_0_15px_#ff2d78] border border-primary/50'
-                    : 'bg-surface-container-high hover:bg-primary/20 text-on-surface border border-outline/30'
+                    ? 'bg-[#ff2d78] text-white shadow-[0_0_15px_#ff2d78] border border-[#ff2d78]/50'
+                    : 'bg-[#15172a] hover:bg-[#ff2d78]/20 text-slate-200 border border-[#232745]'
                 }`}
               >
                 <span>{emoji}</span>
@@ -290,21 +289,21 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       </section>
 
       {/* 6. Onboarding Banner & Expandable Guide */}
-      <section className="bg-surface-container-high p-5 rounded-2xl border border-primary/30">
+      <section className="bg-[#0e101d] p-5 rounded-2xl border border-[#ff2d78]/30">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="p-2.5 rounded-xl bg-primary/20 text-primary">
-              <Sparkles className="w-5 h-5 text-primary neon-text-primary" />
+            <div className="p-2.5 rounded-xl bg-[#ff2d78]/20 text-[#ff2d78]">
+              <Sparkles className="w-5 h-5 text-[#ff2d78]" />
             </div>
             <div>
-              <h3 className="font-headline font-bold text-sm text-on-surface">New to CivicFix?</h3>
-              <p className="font-body text-xs text-on-surface-variant">Report your first municipal issue in under a minute with real-time audit updates.</p>
+              <h3 className="font-headline font-bold text-sm text-white">New to CivicFix?</h3>
+              <p className="font-body text-xs text-slate-400">Report your first municipal issue in under a minute with real-time audit updates.</p>
             </div>
           </div>
 
           <button
             onClick={() => setShowHowItWorks(!showHowItWorks)}
-            className="flex items-center space-x-1 font-label text-xs font-bold text-secondary hover:text-primary px-3 py-1.5 rounded-xl hover:bg-secondary/10 transition-colors uppercase tracking-wider"
+            className="flex items-center space-x-1 font-label text-xs font-bold text-[#00ffcc] hover:text-[#00ffcc] px-3 py-1.5 rounded-xl hover:bg-[#00ffcc]/10 transition-colors uppercase tracking-wider"
           >
             <span>{showHowItWorks ? 'Hide Guide' : 'How It Works'}</span>
             {showHowItWorks ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
@@ -312,38 +311,38 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         </div>
 
         {showHowItWorks && (
-          <div className="mt-4 pt-4 border-t border-primary/30 grid grid-cols-1 sm:grid-cols-3 gap-4 font-body text-xs text-on-surface animate-in fade-in duration-200">
-            <div className="bg-surface-container p-4 rounded-xl border border-outline/20">
-              <span className="font-headline font-bold text-primary block mb-1">Step 1: Capture Evidence</span>
-              <p className="text-on-surface-variant text-xs leading-relaxed">Take a photo with your phone, pick an issue category, and your GPS coordinates will auto-fill.</p>
+          <div className="mt-4 pt-4 border-t border-[#ff2d78]/30 grid grid-cols-1 sm:grid-cols-3 gap-4 font-body text-xs text-white animate-in fade-in duration-200">
+            <div className="bg-[#141629] p-4 rounded-xl border border-[#232745]">
+              <span className="font-headline font-bold text-[#ff2d78] block mb-1">Step 1: Capture Evidence</span>
+              <p className="text-slate-400 text-xs leading-relaxed">Take a photo with your phone, pick an issue category, and your GPS coordinates will auto-fill.</p>
             </div>
-            <div className="bg-surface-container p-4 rounded-xl border border-outline/20">
-              <span className="font-headline font-bold text-tertiary block mb-1">Step 2: Official Triage</span>
-              <p className="text-on-surface-variant text-xs leading-relaxed">Municipal officials review your report, acknowledge it, and dispatch a specialized maintenance crew.</p>
+            <div className="bg-[#141629] p-4 rounded-xl border border-[#232745]">
+              <span className="font-headline font-bold text-[#ffe04a] block mb-1">Step 2: Official Triage</span>
+              <p className="text-slate-400 text-xs leading-relaxed">Municipal officials review your report, acknowledge it, and dispatch a specialized maintenance crew.</p>
             </div>
-            <div className="bg-surface-container p-4 rounded-xl border border-outline/20">
-              <span className="font-headline font-bold text-secondary block mb-1">Step 3: Verification & Fix</span>
-              <p className="text-on-surface-variant text-xs leading-relaxed">Crews complete work on-site, status updates to RESOLVED, and audit logs are recorded permanently.</p>
+            <div className="bg-[#141629] p-4 rounded-xl border border-[#232745]">
+              <span className="font-headline font-bold text-[#00ffcc] block mb-1">Step 3: Verification & Fix</span>
+              <p className="text-slate-400 text-xs leading-relaxed">Crews complete work on-site, status updates to RESOLVED, and audit logs are recorded permanently.</p>
             </div>
           </div>
         )}
       </section>
 
       {/* 7. Search & Filter Controls */}
-      <section className="bg-surface-container p-4 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-4 border border-outline/30">
+      <section className="bg-[#0e101d] p-4 rounded-2xl flex flex-col lg:flex-row items-center justify-between gap-4 border border-[#1b1e34]">
         <div className="relative w-full lg:w-96">
-          <Search className="w-4 h-4 text-on-surface-variant absolute left-3.5 top-3" />
+          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-3" />
           <input
             type="text"
             placeholder="Search reported issues by title, description, or location..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-surface-dim border border-outline/30 rounded-2xl pl-10 pr-9 py-2.5 text-sm text-on-surface placeholder-on-surface-variant/60 focus:outline-none focus:border-secondary transition-all"
+            className="w-full bg-[#141629] border border-[#232745] rounded-2xl pl-10 pr-9 py-2.5 text-sm text-white placeholder-slate-400 focus:outline-none focus:border-[#00ffcc] transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-3 text-on-surface-variant hover:text-white"
+              className="absolute right-3 top-3 text-slate-400 hover:text-white"
             >
               <X className="w-4 h-4" />
             </button>
@@ -355,8 +354,8 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
             onClick={() => setHighPriorityOnly(!highPriorityOnly)}
             className={`font-label text-xs uppercase tracking-wider px-3.5 py-2 rounded-xl font-bold transition-all ${
               highPriorityOnly
-                ? 'bg-primary text-white shadow-[0_0_15px_#ff2d78]'
-                : 'bg-surface-container-high text-on-surface-variant hover:text-white border border-outline/30'
+                ? 'bg-[#ff2d78] text-white shadow-[0_0_15px_#ff2d78]'
+                : 'bg-[#15172a] text-slate-300 hover:text-white border border-[#232745]'
             }`}
           >
             🔥 High Priority
@@ -381,9 +380,9 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
       {/* 8. Feed Cards Grid & Rich Empty State */}
       <section>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-headline font-bold text-lg text-on-surface flex items-center space-x-2">
+          <h2 className="font-headline font-bold text-lg text-white flex items-center space-x-2">
             <span>Reported Civic Issues</span>
-            <span className="font-label text-xs bg-secondary/20 text-secondary px-2.5 py-0.5 rounded-full font-bold border border-secondary/40">
+            <span className="font-label text-xs bg-[#00ffcc]/20 text-[#00ffcc] px-2.5 py-0.5 rounded-full font-bold border border-[#00ffcc]/40">
               {filteredIssues.length} Reports
             </span>
           </h2>
@@ -392,17 +391,17 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="bg-surface-container rounded-2xl p-6 h-64 animate-pulse"></div>
+              <div key={n} className="bg-[#0e101d] rounded-2xl p-6 h-64 animate-pulse border border-[#1b1e34]"></div>
             ))}
           </div>
         ) : filteredIssues.length === 0 ? (
-          <div className="bg-surface-container rounded-3xl p-12 text-center text-on-surface-variant space-y-4 max-w-lg mx-auto my-8 border border-secondary/30">
-            <div className="w-16 h-16 rounded-3xl bg-secondary/20 border border-secondary/40 flex items-center justify-center mx-auto text-secondary shadow-[0_0_15px_rgba(0,255,204,0.4)]">
-              <ShieldCheck className="w-8 h-8 text-secondary neon-text-secondary" />
+          <div className="bg-[#0e101d] rounded-3xl p-12 text-center text-slate-400 space-y-4 max-w-lg mx-auto my-8 border border-[#00ffcc]/30">
+            <div className="w-16 h-16 rounded-3xl bg-[#00ffcc]/10 border border-[#00ffcc]/40 flex items-center justify-center mx-auto text-[#00ffcc] shadow-[0_0_15px_rgba(0,255,204,0.4)]">
+              <ShieldCheck className="w-8 h-8 text-[#00ffcc]" />
             </div>
             <div>
-              <h3 className="font-headline font-bold text-lg text-on-surface">No Issues Matching Filters</h3>
-              <p className="font-body text-xs text-on-surface-variant mt-1">There are no reported civic hazards matching your current search or status filters.</p>
+              <h3 className="font-headline font-bold text-lg text-white">No Issues Matching Filters</h3>
+              <p className="font-body text-xs text-slate-400 mt-1">There are no reported civic hazards matching your current search or status filters.</p>
             </div>
             <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
               <button
@@ -412,13 +411,13 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
                   setSearchQuery('');
                   setHighPriorityOnly(false);
                 }}
-                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-surface-container-high hover:bg-slate-800 text-on-surface font-bold transition-all"
+                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-[#15172a] hover:bg-slate-800 text-white font-bold transition-all border border-[#232745]"
               >
                 Reset Filters
               </button>
               <button
                 onClick={() => navigateTo(isAuthenticated ? 'report' : 'login')}
-                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-primary text-white font-bold transition-all shadow-[0_0_15px_#ff2d78] neon-btn-glow"
+                className="font-label text-xs uppercase tracking-wider px-4 py-2 rounded-xl bg-[#ff2d78] text-white font-bold transition-all shadow-[0_0_15px_#ff2d78]"
               >
                 Be the First to Report
               </button>
