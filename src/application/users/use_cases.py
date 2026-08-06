@@ -241,8 +241,7 @@ class UploadAvatarUseCase:
             if not user:
                 raise EntityNotFoundError("User", str(user_id))
 
-            clean_filename = f"avatars/{uuid.uuid4()}_{file_name}"
-            rel_path = await self.storage.upload(file_bytes, clean_filename, mime_type)
+            rel_path, _, _ = await self.storage.save_file(file_bytes, file_name, mime_type)
 
             user.avatar_url = rel_path
             saved_user = await self.uow.users.save(user)

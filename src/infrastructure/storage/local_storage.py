@@ -45,3 +45,12 @@ class LocalStorageAdapter(StorageAdapterInterface):
 
         relative_path = f"/uploads/{now.year}/{now.month:02d}/{unique_filename}"
         return relative_path, file_name, file_size
+
+    async def upload(
+        self,
+        file_bytes: bytes,
+        file_name: str,
+        mime_type: str
+    ) -> str:
+        relative_path, _, _ = await self.save_file(file_bytes, file_name, mime_type)
+        return relative_path
