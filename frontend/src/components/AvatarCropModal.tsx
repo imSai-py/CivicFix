@@ -96,7 +96,7 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
     try {
       const img = imageRef.current;
       const canvas = document.createElement('canvas');
-      const outputSize = 400; // Output 400x400 high-res avatar
+      const outputSize = 400; // 400x400 High-Res Output Canvas
       canvas.width = outputSize;
       canvas.height = outputSize;
 
@@ -112,26 +112,37 @@ export const AvatarCropModal: React.FC<AvatarCropModalProps> = ({
       ctx.fillStyle = '#0e101d';
       ctx.fillRect(0, 0, outputSize, outputSize);
 
-      // Save canvas state before transformation
-      ctx.save();
-
-      // Translate to center of output canvas
-      ctx.translate(outputSize / 2, outputSize / 2);
-      ctx.rotate((rotation * Math.PI) / 180);
-
-      // Crop viewport size is 250px in UI
+      // UI crop box container size is 250px
       const cropBoxSize = 250;
+      const naturalAspect = img.naturalWidth / img.naturalHeight;
+
+      let baseWidth = cropBoxSize;
+      let baseHeight = cropBoxSize;
+
+      if (naturalAspect > 1) {
+        baseWidth = cropBoxSize;
+        baseHeight = cropBoxSize / naturalAspect;
+      } else {
+        baseHeight = cropBoxSize;
+        baseWidth = cropBoxSize * naturalAspect;
+      }
+
+      // Scale ratio between UI crop box (250px) and Output Canvas (400px)
       const ratio = outputSize / cropBoxSize;
 
+      const drawWidth = baseWidth * scale * ratio;
+      const drawHeight = baseHeight * scale * ratio;
       const drawX = position.x * ratio;
       const drawY = position.y * ratio;
-      const drawWidth = img.naturalWidth * scale * (outputSize / img.width);
-      const drawHeight = img.naturalHeight * scale * (outputSize / img.height);
+
+      ctx.save();
+      ctx.translate(outputSize / 2 + drawX, outputSize / 2 + drawY);
+      ctx.rotate((rotation * Math.PI) / 180);
 
       ctx.drawImage(
         img,
-        -drawWidth / 2 + drawX,
-        -drawHeight / 2 + drawY,
+        -drawWidth / 2,
+        -drawHeight / 2,
         drawWidth,
         drawHeight
       );
