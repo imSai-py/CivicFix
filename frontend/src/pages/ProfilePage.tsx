@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { authApi, issuesApi, getAttachmentUrl } from '../services/api';
 import { Issue } from '../types';
 import { IssueCard } from '../components/IssueCard';
+import { AvatarCropModal } from '../components/AvatarCropModal';
 
 interface ProfilePageProps {
   onSwitchToLogin: () => void;
@@ -26,8 +27,10 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
-  // Avatar Photo Upload State
+  // Avatar Photo Upload & Interactive Crop Modal State
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+  const [showCropModal, setShowCropModal] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Report History State
@@ -82,13 +85,25 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
     );
   }
 
-  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropImageSrc(reader.result as string);
+      setShowCropModal(true);
+    };
+    reader.readAsDataURL(file);
+
+    // Reset file input value so selecting the same file again triggers onChange
+    e.target.value = '';
+  };
+
+  const handleSaveCroppedAvatar = async (croppedFile: File) => {
     setIsUploadingAvatar(true);
     try {
-      await authApi.uploadAvatar(file);
+      await authApi.uploadAvatar(croppedFile);
       await refreshUser();
     } catch (err: any) {
       alert(err.response?.data?.error?.message || 'Failed to upload profile picture.');
@@ -155,6 +170,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
 
   return (
     <div className="max-w-3xl mx-auto space-y-6 my-6 px-1 sm:px-0">
+      {/* Interactive Avatar Crop & Edit Modal */}
+      <AvatarCropModal
+        isOpen={showCropModal}
+        imageSrc={cropImageSrc}
+        onClose={() => setShowCropModal(false)}
+        onCropSave={handleSaveCroppedAvatar}
+      />
+
       {/* Profile Header with Interactive Avatar Upload */}
       <div className="bg-[#0e101d] rounded-3xl p-6 border border-[#00ffcc]/30 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-[0_0_20px_rgba(0,255,204,0.15)]">
         <div className="flex items-center space-x-5">
@@ -216,7 +239,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
         </button>
       </div>
 
-      {/* SLEEK COMPACT GAMIFICATION XP BAR (Conserves Vertical Space) */}
+      {/* SLEEK COMPACT GAMIFICATION XP BAR */}
       <div className="relative rounded-2xl p-4 overflow-hidden bg-gradient-to-r from-[#121226] via-[#0f172a] to-[#1e1432] border border-[#00ffcc]/40 shadow-[0_0_20px_rgba(0,255,204,0.15)] flex flex-col sm:flex-row items-center justify-between gap-4">
         {/* Left: Rank Title & Badge */}
         <div className="flex items-center space-x-3 shrink-0">
@@ -331,7 +354,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
         </button>
       </div>
 
-      {/* TAB 1: PERSONAL DETAILS (Interactive Edit Name & Phone) */}
+      {/* TAB 1: PERSONAL DETAILS */}
       {activeTab === 'info' && (
         <div className="bg-[#0e101d] rounded-3xl p-6 border border-[#1b1e34] space-y-6 shadow-xl">
           <div className="flex items-center justify-between">
@@ -418,7 +441,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
         </div>
       )}
 
-      {/* TAB 2: REPORT HISTORY (History of Reported Issues) */}
+      {/* TAB 2: REPORT HISTORY */}
       {activeTab === 'history' && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
