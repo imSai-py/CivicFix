@@ -204,13 +204,6 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ onSwitchToLogin }) => 
               </span>
             </div>
             <p className="font-body text-xs text-slate-400 mt-0.5">{user.email}</p>
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="font-label text-[10px] text-[#00ffcc] hover:underline uppercase tracking-wider font-bold mt-1 inline-flex items-center gap-1"
-            >
-              <Camera className="w-3 h-3" /> Change Profile Picture
-            </button>
           </div>
         </div>
 
