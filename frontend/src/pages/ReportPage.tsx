@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, MapPin, CheckCircle2, AlertCircle, ArrowRight, X, Sparkles } from 'lucide-react';
+import { Camera, MapPin, CheckCircle2, AlertCircle, ArrowRight, X, AlertTriangle, Lightbulb, Droplets, Trash2, Waves, Wrench, ShieldAlert } from 'lucide-react';
 import { issuesApi, categoriesApi } from '../services/api';
 import { Category } from '../types';
 
@@ -53,6 +53,26 @@ export const ReportPage: React.FC<ReportPageProps> = ({
       );
     }
   }, []);
+
+  const getCategoryIcon = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower.includes('pothole') || lower.includes('road')) {
+      return <AlertTriangle className="w-4 h-4" />;
+    }
+    if (lower.includes('light') || lower.includes('electric') || lower.includes('street')) {
+      return <Lightbulb className="w-4 h-4" />;
+    }
+    if (lower.includes('water') || lower.includes('pipe') || lower.includes('leak')) {
+      return <Droplets className="w-4 h-4" />;
+    }
+    if (lower.includes('garbage') || lower.includes('waste') || lower.includes('trash')) {
+      return <Trash2 className="w-4 h-4" />;
+    }
+    if (lower.includes('drain') || lower.includes('flood')) {
+      return <Waves className="w-4 h-4" />;
+    }
+    return <Wrench className="w-4 h-4" />;
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -114,12 +134,13 @@ export const ReportPage: React.FC<ReportPageProps> = ({
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 my-6 px-1 sm:px-0">
-      {/* Step Header matching Stitch Screen 4 */}
+      {/* Header with Meaningful Municipal Dispatch Badge */}
       <section className="flex flex-col gap-2">
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-2">
           <h1 className="font-headline text-3xl font-bold text-white">Report Issue</h1>
-          <span className="font-label text-xs text-[#00ffcc] tracking-widest uppercase font-bold px-3 py-1 rounded-full bg-[#00ffcc]/10 border border-[#00ffcc]/30 shadow-[0_0_12px_#00ffcc]">
-            Step 01 // 03
+          <span className="font-label text-xs text-[#00ffcc] tracking-widest uppercase font-bold px-3 py-1 rounded-full bg-[#00ffcc]/10 border border-[#00ffcc]/30 shadow-[0_0_12px_#00ffcc] flex items-center gap-1.5">
+            <ShieldAlert className="w-3.5 h-3.5 text-[#00ffcc]" />
+            <span>DIRECT MUNICIPAL DISPATCH</span>
           </span>
         </div>
         <p className="font-body text-slate-400 text-sm">Document the problem to help us route it to the right department.</p>
@@ -140,7 +161,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 1. Evidence Photo Dropzone matching Stitch Screen 4 */}
+        {/* 1. Evidence Photo Dropzone */}
         <section className="flex flex-col gap-3">
           <h2 className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold">Evidence</h2>
           {previewUrl ? (
@@ -171,10 +192,10 @@ export const ReportPage: React.FC<ReportPageProps> = ({
           )}
         </section>
 
-        {/* 2. Classification Cards matching Stitch Screen 4 */}
+        {/* 2. Category Classification Cards with Meaningful Icons */}
         <section className="flex flex-col gap-3">
           <h2 className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold">Classification</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {categories.map((c) => {
               const isSelected = categoryId === c.id;
               return (
@@ -182,18 +203,18 @@ export const ReportPage: React.FC<ReportPageProps> = ({
                   key={c.id}
                   type="button"
                   onClick={() => setCategoryId(c.id)}
-                  className={`p-4 rounded-2xl flex flex-col items-start gap-3 transition-all active:scale-95 text-left ${
+                  className={`p-4 rounded-2xl flex items-center gap-3 transition-all active:scale-95 text-left ${
                     isSelected
-                      ? 'bg-[#0e101d] border border-[#00ffcc] text-[#00ffcc] shadow-[0_0_15px_rgba(0,255,204,0.3)]'
+                      ? 'bg-[#0e101d] border border-[#00ffcc] text-[#00ffcc] shadow-[0_0_15px_rgba(0,255,204,0.3)] font-bold'
                       : 'bg-[#0e101d] border border-[#1b1e34] text-slate-300 hover:border-[#00ffcc]/40 hover:bg-[#141629]'
                   }`}
                 >
-                  <div className={`w-9 h-9 rounded-full flex items-center justify-center ${
+                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                     isSelected ? 'bg-[#00ffcc]/20 text-[#00ffcc]' : 'bg-[#171a2e] text-slate-400'
                   }`}>
-                    <Sparkles className="w-4 h-4" />
+                    {getCategoryIcon(c.name)}
                   </div>
-                  <span className="font-headline font-semibold text-xs line-clamp-1">{c.name}</span>
+                  <span className="font-headline text-xs line-clamp-2 leading-tight">{c.name}</span>
                 </button>
               );
             })}
@@ -207,7 +228,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
             <input
               type="text"
               required
-              placeholder="e.g. Broken Streetlight on 5th Ave"
+              placeholder="e.g. Dangerous Pothole on 5th Ave"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               className="w-full bg-[#141629] border border-[#232745] rounded-2xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-[#00ffcc] transition-all"
@@ -227,7 +248,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
           </div>
         </section>
 
-        {/* 4. Location Context matching Stitch Screen 4 */}
+        {/* 4. Location Context */}
         <section className="flex flex-col gap-3">
           <h2 className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold">Location Context</h2>
           <div className="bg-[#0e101d] border border-[#1b1e34] rounded-2xl p-4 flex items-center justify-between flex-wrap gap-3">
@@ -252,7 +273,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
           </div>
         </section>
 
-        {/* 5. Submit Action Button matching Stitch Screen 4 */}
+        {/* 5. Submit Action Button */}
         <section className="pt-2">
           <button
             type="submit"
