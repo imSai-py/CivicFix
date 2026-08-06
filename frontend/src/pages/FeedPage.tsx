@@ -33,6 +33,20 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [showHowItWorks, setShowHowItWorks] = useState<boolean>(false);
+  const [currentTime, setCurrentTime] = useState<string>('');
+
+  useEffect(() => {
+    const updateTime = () => {
+      const now = new Date();
+      setCurrentTime(now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+    };
+    updateTime();
+    const timer = setInterval(updateTime, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentHour = new Date().getHours();
+  const greetingText = currentHour < 12 ? 'Good morning' : currentHour < 17 ? 'Good afternoon' : 'Good evening';
 
   // Filters
   const [selectedStatus, setSelectedStatus] = useState<string>('');
@@ -109,13 +123,15 @@ export const FeedPage: React.FC<FeedPageProps> = ({ isAuthenticated, onNavigate 
 
   return (
     <div className="space-y-8 max-w-4xl mx-auto px-1 sm:px-0">
-      {/* 1. Greeting Header matching EXACT Stitch Screen 2 */}
+      {/* 1. Greeting Header with Dynamic Time & Live Clock */}
       <section className="space-y-1">
         <h2 className="font-headline font-bold text-3xl md:text-4xl text-white tracking-tight">
-          Good evening, <span className="text-[#00ffcc] neon-text-secondary font-bold">{firstName}</span>.
+          {greetingText}, <span className="text-[#00ffcc] neon-text-secondary font-bold">{firstName}</span>.
         </h2>
-        <p className="font-label text-xs text-slate-400 uppercase tracking-widest">
-          NEO-TOKYO SECTOR 4 • 21:45 PM
+        <p className="font-label text-xs text-slate-400 uppercase tracking-widest flex items-center space-x-2">
+          <span>MUNICIPAL OPERATIONS GRID</span>
+          <span>•</span>
+          <span className="text-[#00ffcc] font-mono font-bold">{currentTime || 'LIVE'}</span>
         </p>
       </section>
 
