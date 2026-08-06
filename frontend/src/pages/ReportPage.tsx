@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Camera, MapPin, CheckCircle2, AlertCircle, ArrowRight, X, AlertTriangle, Lightbulb, Droplets, Trash2, Waves, Wrench, ShieldAlert, FolderPlus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Camera, MapPin, CheckCircle2, AlertCircle, ArrowRight, X, AlertTriangle, Lightbulb, Droplets, Trash2, Waves, Wrench, ShieldAlert, ImageIcon } from 'lucide-react';
 import { issuesApi, categoriesApi } from '../services/api';
 import { Category } from '../types';
+import { CameraModal } from '../components/CameraModal';
 
 interface ReportPageProps {
   isAuthenticated: boolean;
@@ -28,9 +29,8 @@ export const ReportPage: React.FC<ReportPageProps> = ({
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
-  // Hidden File Inputs for Live Camera vs Gallery
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const galleryInputRef = useRef<HTMLInputElement>(null);
+  // In-App Camera Viewfinder Modal State
+  const [showCameraModal, setShowCameraModal] = useState(false);
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -78,12 +78,9 @@ export const ReportPage: React.FC<ReportPageProps> = ({
     return <Wrench className="w-4 h-4" />;
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      setFile(selectedFile);
-      setPreviewUrl(URL.createObjectURL(selectedFile));
-    }
+  const handlePhotoCaptured = (capturedFile: File) => {
+    setFile(capturedFile);
+    setPreviewUrl(URL.createObjectURL(capturedFile));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -138,6 +135,13 @@ export const ReportPage: React.FC<ReportPageProps> = ({
 
   return (
     <div className="max-w-2xl mx-auto space-y-8 my-6 px-1 sm:px-0">
+      {/* Camera Viewfinder Modal with Gallery Icon on Bottom Left & Shutter in Center */}
+      <CameraModal
+        isOpen={showCameraModal}
+        onClose={() => setShowCameraModal(false)}
+        onCapture={handlePhotoCaptured}
+      />
+
       {/* Header with Meaningful Municipal Dispatch Badge */}
       <section className="flex flex-col gap-2">
         <div className="flex items-center justify-between flex-wrap gap-2">
@@ -165,7 +169,7 @@ export const ReportPage: React.FC<ReportPageProps> = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* 1. Dual-Action Evidence Photo Container (Snap Live Photo vs Choose from Gallery) */}
+        {/* 1. Evidence Photo Container - Clicking Opens In-App Camera Viewfinder */}
         <section className="flex flex-col gap-3">
           <h2 className="font-label text-xs uppercase tracking-wider text-slate-400 font-bold">Evidence Photo</h2>
           {previewUrl ? (
@@ -184,52 +188,25 @@ export const ReportPage: React.FC<ReportPageProps> = ({
               </button>
             </div>
           ) : (
-            <div className="bg-[#0e101d] rounded-2xl p-6 border border-[#ff2d78]/50 shadow-[0_0_20px_rgba(255,45,120,0.15)] flex flex-col items-center justify-center gap-4">
-              <div className="text-center space-y-1">
-                <span className="font-headline font-semibold text-white text-sm block">Attach Evidence Photo</span>
-                <span className="font-body text-xs text-slate-400">Capture a live photo on-site or upload an existing image from gallery</span>
+            <button
+              type="button"
+              onClick={() => setShowCameraModal(true)}
+              className="w-full h-48 rounded-2xl bg-[#0e101d] flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-300 hover:bg-[#141629] border border-[#ff2d78]/50 hover:border-[#ff2d78] shadow-[0_0_20px_rgba(255,45,120,0.15)] group"
+            >
+              <div className="w-16 h-16 rounded-full bg-[#ff2d78]/15 border border-[#ff2d78]/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-[0_0_15px_rgba(255,45,120,0.4)]">
+                <Camera className="w-8 h-8 text-[#ff2d78]" />
               </div>
-
-              {/* Dual Action Buttons */}
-              <div className="flex flex-wrap items-center justify-center gap-3 w-full max-w-md">
-                {/* 📸 Button 1: Live Camera */}
-                <button
-                  type="button"
-                  onClick={() => cameraInputRef.current?.click()}
-                  className="flex-1 min-w-[150px] py-3.5 px-4 rounded-xl bg-[#ff2d78] text-white font-label text-xs uppercase font-bold tracking-wider flex items-center justify-center space-x-2 shadow-[0_0_15px_#ff2d78] hover:shadow-[0_0_25px_#ff2d78] active:scale-95 transition-all cursor-pointer"
-                >
-                  <Camera className="w-4 h-4 text-white" />
-                  <span>Snap Live Photo</span>
-                </button>
-
-                {/* 📁 Button 2: Gallery / File Manager */}
-                <button
-                  type="button"
-                  onClick={() => galleryInputRef.current?.click()}
-                  className="flex-1 min-w-[150px] py-3.5 px-4 rounded-xl bg-[#141629] border border-[#00ffcc]/40 text-[#00ffcc] font-label text-xs uppercase font-bold tracking-wider flex items-center justify-center space-x-2 shadow-[0_0_12px_rgba(0,255,204,0.3)] hover:bg-[#00ffcc]/10 active:scale-95 transition-all cursor-pointer"
-                >
-                  <FolderPlus className="w-4 h-4 text-[#00ffcc]" />
-                  <span>Gallery / Files</span>
-                </button>
+              <div className="flex flex-col items-center">
+                <span className="font-headline font-semibold text-white text-sm">Snap a Photo</span>
+                <span className="font-body text-xs text-slate-400 mt-0.5 flex items-center gap-1.5">
+                  <span>Opens Live Camera</span>
+                  <span>•</span>
+                  <span className="text-[#00ffcc] font-semibold flex items-center gap-0.5">
+                    <ImageIcon className="w-3 h-3 text-[#00ffcc]" /> Gallery included inside
+                  </span>
+                </span>
               </div>
-
-              {/* Hidden HTML File Inputs */}
-              <input
-                ref={cameraInputRef}
-                type="file"
-                accept="image/*"
-                capture="environment"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <input
-                ref={galleryInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-            </div>
+            </button>
           )}
         </section>
 
