@@ -15,6 +15,18 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
   const [cameraError, setCameraError] = useState<string | null>(null);
 
+  // Disable Body Scrolling when Camera is Active
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [isOpen]);
+
   // Start Camera Stream
   useEffect(() => {
     if (!isOpen) return;
@@ -84,14 +96,25 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col justify-between overflow-hidden animate-in fade-in duration-300">
-      {/* Top Controls Overlay */}
-      <div className="absolute top-0 left-0 right-0 z-30 p-4 flex items-center justify-between bg-gradient-to-b from-black/80 via-black/40 to-transparent">
-        <div className="flex items-center space-x-2">
-          <div className="w-2.5 h-2.5 rounded-full bg-[#00ffcc] animate-ping"></div>
-          <span className="font-label text-xs uppercase tracking-widest text-[#00ffcc] font-bold">
-            Live Viewfinder
-          </span>
+    <div className="fixed inset-0 z-[99999] h-screen w-screen bg-slate-950 flex flex-col justify-between overflow-hidden animate-in fade-in duration-300">
+      {/* Top Controls Overlay with Prominent Cancel Button */}
+      <div className="absolute top-0 left-0 right-0 z-[100000] p-4 pt-6 flex items-center justify-between bg-gradient-to-b from-black/90 via-black/50 to-transparent">
+        <div className="flex items-center space-x-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-2 rounded-full bg-slate-900/90 border border-slate-700 text-slate-200 text-xs font-label uppercase font-bold hover:text-white hover:border-[#ff2d78] transition-all flex items-center gap-1.5 shadow-xl active:scale-95"
+          >
+            <X className="w-4 h-4 text-[#ff2d78]" />
+            <span>Cancel</span>
+          </button>
+
+          <div className="flex items-center space-x-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-[#00ffcc] animate-ping"></div>
+            <span className="font-label text-xs uppercase tracking-widest text-[#00ffcc] font-bold hidden sm:inline">
+              Live Viewfinder
+            </span>
+          </div>
         </div>
 
         <button
@@ -107,7 +130,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
       {/* Main Video Viewfinder Area */}
       <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
         {cameraError ? (
-          <div className="p-6 text-center space-y-4 max-w-sm mx-auto">
+          <div className="p-6 text-center space-y-4 max-w-sm mx-auto z-10">
             <AlertCircle className="w-12 h-12 text-amber-400 mx-auto animate-bounce" />
             <p className="font-headline font-semibold text-sm text-slate-200">{cameraError}</p>
             <button
@@ -129,7 +152,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
         )}
 
         {/* Viewfinder Corner Overlays */}
-        <div className="absolute inset-8 pointer-events-none border-2 border-[#00ffcc]/30 rounded-3xl flex flex-col justify-between p-4">
+        <div className="absolute inset-8 pointer-events-none border-2 border-[#00ffcc]/30 rounded-3xl flex flex-col justify-between p-4 z-20">
           <div className="flex justify-between">
             <div className="w-6 h-6 border-t-2 border-l-2 border-[#00ffcc]"></div>
             <div className="w-6 h-6 border-t-2 border-r-2 border-[#00ffcc]"></div>
@@ -144,8 +167,8 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {/* Bottom Shutter & Gallery Action Controls */}
-      <div className="relative z-30 p-6 bg-gradient-to-t from-black via-black/80 to-transparent flex items-center justify-between px-8 sm:px-16">
+      {/* Bottom Shutter & Gallery Action Controls (z-[100000] ensures higher than BottomNav) */}
+      <div className="relative z-[100000] p-6 pb-8 bg-gradient-to-t from-black via-black/90 to-transparent flex items-center justify-between px-8 sm:px-16 border-t border-white/10">
         {/* Bottom Left: Gallery Icon */}
         <button
           type="button"
