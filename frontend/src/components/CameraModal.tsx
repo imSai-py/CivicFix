@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Camera, X, Image as ImageIcon, RefreshCw, AlertCircle } from 'lucide-react';
+import { X, Image as ImageIcon, RefreshCw, AlertCircle, Zap, ZapOff } from 'lucide-react';
 
 interface CameraModalProps {
   isOpen: boolean;
@@ -13,9 +13,10 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
   const galleryInputRef = useRef<HTMLInputElement>(null);
 
   const [facingMode, setFacingMode] = useState<'environment' | 'user'>('environment');
+  const [flashOn, setFlashOn] = useState(false);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
-  // Disable Body Scrolling when Camera is Active
+  // Lock Body Scroll when Camera is Open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -47,7 +48,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
         }
       } catch (err: any) {
         console.error('Camera access error:', err);
-        setCameraError('Camera access denied or unavailable. You can choose a photo from Gallery below.');
+        setCameraError('Camera access unavailable. Choose a photo from Gallery below.');
       }
     };
 
@@ -81,7 +82,7 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
         onCapture(file);
         onClose();
       }
-    }, 'image/jpeg', 0.92);
+    }, 'image/jpeg', 0.95);
   };
 
   const handleGalleryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,47 +97,47 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
   };
 
   return (
-    <div className="fixed inset-0 z-[99999] h-screen w-screen bg-slate-950 flex flex-col justify-between overflow-hidden animate-in fade-in duration-300">
-      {/* Top Controls Overlay with Prominent Cancel Button */}
-      <div className="absolute top-0 left-0 right-0 z-[100000] p-4 pt-6 flex items-center justify-between bg-gradient-to-b from-black/90 via-black/50 to-transparent">
-        <div className="flex items-center space-x-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-4 py-2 rounded-full bg-slate-900/90 border border-slate-700 text-slate-200 text-xs font-label uppercase font-bold hover:text-white hover:border-[#ff2d78] transition-all flex items-center gap-1.5 shadow-xl active:scale-95"
-          >
-            <X className="w-4 h-4 text-[#ff2d78]" />
-            <span>Cancel</span>
-          </button>
-
-          <div className="flex items-center space-x-2">
-            <div className="w-2.5 h-2.5 rounded-full bg-[#00ffcc] animate-ping"></div>
-            <span className="font-label text-xs uppercase tracking-widest text-[#00ffcc] font-bold hidden sm:inline">
-              Live Viewfinder
-            </span>
-          </div>
-        </div>
-
+    <div className="fixed inset-0 z-[99999] h-screen w-screen bg-black flex flex-col justify-between overflow-hidden animate-in fade-in duration-200">
+      {/* 1. TOP BAR (X close on left, Flash toggle in center) */}
+      <div className="absolute top-0 left-0 right-0 z-[100000] px-4 pt-4 pb-8 flex items-center justify-between bg-gradient-to-b from-black/80 via-black/40 to-transparent">
+        {/* Top Left: Close X Button */}
         <button
           type="button"
           onClick={onClose}
-          className="p-2.5 rounded-full bg-black/60 text-white hover:text-rose-400 border border-white/20 backdrop-blur-md transition-all active:scale-95"
+          className="p-2 text-white hover:opacity-80 active:scale-90 transition-all"
           title="Close Camera"
         >
-          <X className="w-6 h-6" />
+          <X className="w-7 h-7 stroke-[2.5]" />
         </button>
+
+        {/* Top Center: Flash Toggle */}
+        <button
+          type="button"
+          onClick={() => setFlashOn(!flashOn)}
+          className="p-2 text-white hover:opacity-80 active:scale-90 transition-all"
+          title="Toggle Flash"
+        >
+          {flashOn ? (
+            <Zap className="w-6 h-6 fill-amber-300 text-amber-300" />
+          ) : (
+            <ZapOff className="w-6 h-6 text-white" />
+          )}
+        </button>
+
+        {/* Spacer for symmetry */}
+        <div className="w-10"></div>
       </div>
 
-      {/* Main Video Viewfinder Area */}
+      {/* 2. MAIN CAMERA VIEWFINDER */}
       <div className="relative flex-1 bg-black flex items-center justify-center overflow-hidden">
         {cameraError ? (
           <div className="p-6 text-center space-y-4 max-w-sm mx-auto z-10">
-            <AlertCircle className="w-12 h-12 text-amber-400 mx-auto animate-bounce" />
+            <AlertCircle className="w-12 h-12 text-amber-400 mx-auto" />
             <p className="font-headline font-semibold text-sm text-slate-200">{cameraError}</p>
             <button
               type="button"
               onClick={() => galleryInputRef.current?.click()}
-              className="px-6 py-3 rounded-2xl bg-[#00ffcc] text-slate-950 font-label text-xs uppercase tracking-wider font-bold shadow-[0_0_15px_#00ffcc]"
+              className="px-6 py-3 rounded-2xl bg-white text-slate-950 font-label text-xs uppercase tracking-wider font-bold"
             >
               Open Gallery / Files
             </button>
@@ -151,62 +152,44 @@ export const CameraModal: React.FC<CameraModalProps> = ({ isOpen, onClose, onCap
           />
         )}
 
-        {/* Viewfinder Corner Overlays */}
-        <div className="absolute inset-8 pointer-events-none border-2 border-[#00ffcc]/30 rounded-3xl flex flex-col justify-between p-4 z-20">
-          <div className="flex justify-between">
-            <div className="w-6 h-6 border-t-2 border-l-2 border-[#00ffcc]"></div>
-            <div className="w-6 h-6 border-t-2 border-r-2 border-[#00ffcc]"></div>
-          </div>
-          <div className="flex justify-between">
-            <div className="w-6 h-6 border-b-2 border-l-2 border-[#00ffcc]"></div>
-            <div className="w-6 h-6 border-b-2 border-r-2 border-[#00ffcc]"></div>
-          </div>
+        {/* Floating Shutter Button directly over bottom center of Viewfinder */}
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30">
+          <button
+            type="button"
+            onClick={handleCapturePhoto}
+            disabled={!!cameraError}
+            className="w-20 h-20 rounded-full border-[5px] border-white p-1 flex items-center justify-center active:scale-90 transition-transform shadow-2xl disabled:opacity-50 cursor-pointer"
+            title="Snap Photo"
+          >
+            <div className="w-full h-full rounded-full bg-white active:bg-slate-300 transition-colors"></div>
+          </button>
         </div>
 
         {/* Hidden Canvas for Frame Capture */}
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {/* Bottom Shutter & Gallery Action Controls (z-[100000] ensures higher than BottomNav) */}
-      <div className="relative z-[100000] p-6 pb-8 bg-gradient-to-t from-black via-black/90 to-transparent flex items-center justify-between px-8 sm:px-16 border-t border-white/10">
-        {/* Bottom Left: Gallery Icon */}
+      {/* 3. BOTTOM BLACK BAR (Gallery on Far-Left, Flip Camera on Far-Right) */}
+      <div className="relative z-[100000] h-20 bg-black flex items-center justify-between px-6 border-t border-white/10 shrink-0">
+        {/* Bottom-Left: Gallery Thumbnail Icon */}
         <button
           type="button"
           onClick={() => galleryInputRef.current?.click()}
-          className="flex flex-col items-center gap-1 group active:scale-90 transition-transform"
-          title="Open Gallery / Photos"
+          className="w-11 h-11 rounded-xl bg-[#1c1c1e] border border-white/20 flex items-center justify-center active:scale-90 transition-transform overflow-hidden shadow-md cursor-pointer"
+          title="Open Gallery"
         >
-          <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center group-hover:border-[#00ffcc] group-hover:bg-[#00ffcc]/20 transition-all shadow-lg">
-            <ImageIcon className="w-7 h-7 text-white group-hover:text-[#00ffcc]" />
-          </div>
-          <span className="font-label text-[10px] text-slate-300 uppercase tracking-wider font-bold">Gallery</span>
+          <ImageIcon className="w-6 h-6 text-white" />
         </button>
 
-        {/* Bottom Center: Shutter Button */}
-        <button
-          type="button"
-          onClick={handleCapturePhoto}
-          disabled={!!cameraError}
-          className="relative w-20 h-20 rounded-full border-4 border-white flex items-center justify-center p-1 active:scale-90 transition-transform shadow-[0_0_25px_rgba(255,255,255,0.6)] disabled:opacity-50"
-          title="Take Photo"
-        >
-          <div className="w-full h-full rounded-full bg-[#ff2d78] shadow-[0_0_20px_#ff2d78] flex items-center justify-center hover:scale-105 transition-transform">
-            <Camera className="w-8 h-8 text-white" />
-          </div>
-        </button>
-
-        {/* Bottom Right: Flip Camera */}
+        {/* Bottom-Right: Flip Camera Icon */}
         <button
           type="button"
           onClick={toggleCameraFacing}
           disabled={!!cameraError}
-          className="flex flex-col items-center gap-1 group active:scale-90 transition-transform disabled:opacity-50"
-          title="Switch Front / Rear Camera"
+          className="w-11 h-11 rounded-full bg-[#1c1c1e] border border-white/20 flex items-center justify-center active:scale-90 transition-transform shadow-md disabled:opacity-50 cursor-pointer"
+          title="Flip Camera"
         >
-          <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md border border-white/30 flex items-center justify-center group-hover:border-[#00ffcc] group-hover:bg-[#00ffcc]/20 transition-all shadow-lg">
-            <RefreshCw className="w-6 h-6 text-white group-hover:text-[#00ffcc]" />
-          </div>
-          <span className="font-label text-[10px] text-slate-300 uppercase tracking-wider font-bold">Flip</span>
+          <RefreshCw className="w-5 h-5 text-white" />
         </button>
 
         {/* Hidden File Input for Gallery */}
