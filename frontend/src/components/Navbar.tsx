@@ -1,6 +1,7 @@
-import React from 'react';
-import { Shield, MapPin, User as UserIcon, FilePlus, LayoutDashboard, MessageSquare, Sparkles, LogIn, Menu, Bell } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, MapPin, User as UserIcon, FilePlus, LayoutDashboard, MessageSquare, Sparkles, LogIn, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { NotificationCenterModal } from './NotificationCenterModal';
 
 interface NavbarProps {
   activeTab: 'home' | 'map' | 'report' | 'activity' | 'profile' | 'admin' | 'login' | 'register';
@@ -11,20 +12,24 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
   const { user, isAuthenticated } = useAuth();
   const isOfficialOrAdmin = user && (user.role === 'OFFICIAL' || user.role === 'ADMIN');
 
+  // Modern State-of-the-Art Notification Hub Modal State
+  const [showNotificationHub, setShowNotificationHub] = useState(false);
+  const [unreadCount] = useState(3);
+
   return (
     <header className="sticky top-0 z-50 bg-[#090a14]/95 backdrop-blur-xl border-b border-[#ff2d78]/20 shadow-[0_4px_25px_rgba(0,0,0,0.9)] transition-all">
+      {/* State-of-the-Art Modern Notification Hub Modal */}
+      <NotificationCenterModal
+        isOpen={showNotificationHub}
+        onClose={() => setShowNotificationHub(false)}
+        onNavigateToTab={(tab) => setActiveTab(tab)}
+      />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         
-        {/* Mobile Header matching EXACT Stitch Screen 2 */}
+        {/* Mobile Header (NO HAMBURGER ICON) */}
         <div className="flex md:hidden items-center justify-between w-full">
-          <button
-            type="button"
-            onClick={() => setActiveTab('home')}
-            className="p-2 text-slate-400 hover:text-white transition-colors"
-          >
-            <Menu className="w-6 h-6" />
-          </button>
-
+          {/* Brand Logo */}
           <div
             onClick={() => setActiveTab('home')}
             className="cursor-pointer font-headline font-black text-2xl text-[#ff2d78] drop-shadow-[0_0_10px_rgba(255,45,120,0.9)] tracking-tight flex items-center space-x-1.5"
@@ -33,13 +38,19 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
             <span className="text-[#00ffcc] drop-shadow-[0_0_10px_rgba(0,255,204,0.9)]">Fix</span>
           </div>
 
+          {/* Bell Notification Button */}
           <button
             type="button"
-            onClick={() => setActiveTab(isAuthenticated ? 'activity' : 'login')}
-            className="p-2 text-slate-400 hover:text-white transition-colors relative"
+            onClick={() => setShowNotificationHub(true)}
+            className="p-2 text-slate-300 hover:text-[#00ffcc] transition-colors relative active:scale-95 cursor-pointer"
+            title="Open Notification Hub"
           >
-            <Bell className="w-5 h-5" />
-            <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-[#ff2d78] shadow-[0_0_8px_#ff2d78]"></span>
+            <Bell className="w-5 h-5 text-[#00ffcc]" />
+            {unreadCount > 0 && (
+              <span className="absolute top-1 right-1 w-4 h-4 rounded-full bg-[#ff2d78] text-white font-headline text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_#ff2d78]">
+                {unreadCount}
+              </span>
+            )}
           </button>
         </div>
 
@@ -154,6 +165,21 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, setActiveTab }) => {
 
         {/* Desktop Right Actions */}
         <div className="hidden md:flex items-center space-x-3">
+          {/* Bell Notification Button (Desktop) */}
+          <button
+            type="button"
+            onClick={() => setShowNotificationHub(true)}
+            className="p-2.5 rounded-xl bg-[#101222] border border-[#1b1e36] text-slate-300 hover:text-[#00ffcc] hover:border-[#00ffcc]/40 transition-all relative active:scale-95 cursor-pointer"
+            title="Open Notification Hub"
+          >
+            <Bell className="w-4 h-4 text-[#00ffcc]" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#ff2d78] text-white font-headline text-[9px] font-bold flex items-center justify-center shadow-[0_0_8px_#ff2d78]">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
           {isAuthenticated ? (
             <button
               onClick={() => setActiveTab('profile')}
